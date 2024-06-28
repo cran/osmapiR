@@ -1,0 +1,12 @@
+structure(list(method = "GET", url = "osm.org/api/0.6/user/2", 
+    status_code = 404L, headers = structure(list(`cache-control` = "no-cache", 
+        vary = "Origin", `referrer-policy` = "strict-origin-when-cross-origin", 
+        `x-permitted-cross-domain-policies` = "none", `x-xss-protection` = "1; mode=block", 
+        `x-request-id` = "REDACTED", `x-download-options` = "noopen", 
+        `x-runtime` = "0.009392", `x-frame-options` = "sameorigin", 
+        `x-content-type-options` = "nosniff", `content-security-policy` = "default-src 'self'; child-src 'self'; connect-src 'self' matomo.openstreetmap.org; font-src 'none'; form-action 'self'; frame-ancestors 'self'; frame-src 'self'; img-src 'self' data: www.gravatar.com *.wp.com tile.openstreetmap.org *.tile.openstreetmap.org *.tile.thunderforest.com tile.tracestrack.com *.openstreetmap.fr matomo.openstreetmap.org https://openstreetmap-user-avatars.s3.dualstack.eu-west-1.amazonaws.com https://openstreetmap-gps-images.s3.dualstack.eu-west-1.amazonaws.com; manifest-src 'self'; media-src 'none'; object-src 'self'; script-src 'self' matomo.openstreetmap.org; style-src 'self'; worker-src 'none'", 
+        date = "REDACTED", `x-powered-by` = "Phusion Passenger(R) 6.0.20", 
+        `strict-transport-security` = "max-age=31536000; includeSubDomains; preload", 
+        status = "404 Not Found", `content-type` = "text/html; charset=utf-8", 
+        server = "Apache/2.4.54 (Ubuntu)"), class = "httr2_headers"), 
+    body = raw(0), cache = new.env(parent = emptyenv())), class = "httr2_response")
