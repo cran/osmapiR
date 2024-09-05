@@ -138,9 +138,6 @@ osm_create_object <- function(x, changeset_id) {
   }
   osm_type <- xml2::xml_name(xml2::xml_child(xml))
 
-  if (length(osm_type) > 1) {
-    warning("More than one OSM object found. Only the first is created.")
-  }
   if (!osm_type[1] %in% c("node", "way", "relation")) {
     warning("Malformed xml. Node name is ", osm_type[1], ", and should be one of `node`, `way` or `relation`.")
   }
@@ -216,7 +213,6 @@ osm_create_object <- function(x, changeset_id) {
 #' @noRd
 #'
 #' @examples
-#' \dontrun{
 #' node <- osm_read_object(osm_type = "node", osm_id = 35308286)
 #' node
 #'
@@ -225,7 +221,6 @@ osm_create_object <- function(x, changeset_id) {
 #'
 #' rel <- osm_read_object(osm_type = "relation", osm_id = "40581")
 #' rel
-#' }
 osm_read_object <- function(osm_type = c("node", "way", "relation"),
                             osm_id, format = c("R", "xml", "json"), tags_in_columns = FALSE) {
   osm_type <- match.arg(osm_type)
@@ -556,7 +551,6 @@ osm_delete_object <- function(x, changeset_id) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' node <- osm_history_object(osm_type = "node", osm_id = 35308286)
 #' node
 #'
@@ -565,7 +559,6 @@ osm_delete_object <- function(x, changeset_id) {
 #'
 #' rel <- osm_history_object(osm_type = "relation", osm_id = "40581")
 #' rel
-#' }
 osm_history_object <- function(osm_type = c("node", "way", "relation"), osm_id,
                                format = c("R", "xml", "json"), tags_in_columns = FALSE) {
   osm_type <- match.arg(osm_type)
@@ -627,7 +620,6 @@ osm_history_object <- function(osm_type = c("node", "way", "relation"), osm_id,
 #' @noRd
 #'
 #' @examples
-#' \dontrun{
 #' node <- osm_version_object(osm_type = "node", osm_id = 35308286, version = 1)
 #' node
 #'
@@ -636,7 +628,6 @@ osm_history_object <- function(osm_type = c("node", "way", "relation"), osm_id,
 #'
 #' rel <- osm_version_object(osm_type = "relation", osm_id = "40581", version = 3)
 #' rel
-#' }
 osm_version_object <- function(osm_type = c("node", "way", "relation"), osm_id, version,
                                format = c("R", "xml", "json"), tags_in_columns = FALSE) {
   osm_type <- match.arg(osm_type)
@@ -713,7 +704,6 @@ osm_version_object <- function(osm_type = c("node", "way", "relation"), osm_id, 
 #' @noRd
 #'
 #' @examples
-#' \dontrun{
 #' node <- osm_fetch_objects(osm_type = "nodes", osm_ids = c(35308286, 1935675367))
 #' node
 #'
@@ -723,7 +713,6 @@ osm_version_object <- function(osm_type = c("node", "way", "relation"), osm_id, 
 #' # Specific versions
 #' rel <- osm_fetch_objects(osm_type = "relations", osm_ids = c("40581", "341530"), versions = c(3, 1))
 #' rel
-#' }
 osm_fetch_objects <- function(osm_type = c("nodes", "ways", "relations"), osm_ids, versions,
                               format = c("R", "xml", "json"), tags_in_columns = FALSE) {
   osm_type <- match.arg(osm_type)
@@ -747,7 +736,7 @@ osm_fetch_objects <- function(osm_type = c("nodes", "ways", "relations"), osm_id
 
   # Avoid ERROR: ! HTTP 414 URI Too Long: tested to be > 8213 characters in the URI
   nchar_base <- nchar(req$url) + nchar(osm_type) + 2
-  nchar_url <- nchar(ids) + length(ids) * 2 + nchar_base # `,` in ids encoded in 3 char (%2C)
+  nchar_url <- nchar(ids) + length(osm_ids) * 2 + nchar_base # `,` in ids encoded in 3 char (%2C)
   if (nchar_url > 8213) {
     out <- fetch_objects_batches(
       osm_type = osm_type, osm_ids = osm_ids, nchar_base = nchar_base,
@@ -1013,13 +1002,11 @@ osm_ways_node <- function(node_id, format = c("R", "xml", "json"), tags_in_colum
 #' @noRd
 #'
 #' @examples
-#' \dontrun{
 #' way <- osm_full_object(osm_type = "way", osm_id = 13073736)
 #' way
 #'
 #' rel <- osm_full_object(osm_type = "relation", osm_id = "40581")
 #' rel
-#' }
 osm_full_object <- function(osm_type = c("way", "relation"), osm_id,
                             format = c("R", "xml", "json"), tags_in_columns = FALSE) {
   osm_type <- match.arg(osm_type)

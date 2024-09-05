@@ -4,15 +4,16 @@
 \alias{osm_get_notes}
 \title{Get notes}
 \usage{
-osm_get_notes(note_id, format = c("R", "xml", "rss", "json", "gpx"))
+osm_get_notes(note_id, format = c("R", "sf", "xml", "rss", "json", "gpx"))
 }
 \arguments{
 \item{note_id}{Note id represented by a numeric or a character value.}
 
-\item{format}{Format of the output. Can be \code{"R"} (default), \code{"xml"}, \code{"rss"}, \code{"json"} or \code{"gpx"}.}
+\item{format}{Format of the output. Can be \code{"R"} (default), \code{"sf"}, \code{"xml"}, \code{"rss"}, \code{"json"} or \code{"gpx"}.}
 }
 \value{
-If \code{format = "R"}, returns a data frame with one map note per row.
+If \code{format = "R"}, returns a data frame with one map note per row. If \code{format = "sf"}, returns a \code{sf} object from
+\pkg{sf}.
 \subsection{\code{format = "xml"}}{
 
 Returns a \link[xml2:oldclass]{xml2::xml_document} with the following format:
@@ -81,10 +82,8 @@ For \code{format} in \code{"rss"}, and \code{"gpx"}, a \link[xml2:oldclass]{xml2
 Returns the existing note with the given ID.
 }
 \examples{
-\dontrun{
 note <- osm_get_notes(note_id = "2067786")
 note
-}
 }
 \seealso{
 Other get notes' functions: 

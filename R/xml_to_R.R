@@ -9,6 +9,7 @@ tags_xml2mat_wide <- function(xml_nodeset) {
     tagV <- vapply(tag, function(x) x, FUN.VALUE = character(2))
     m[i, tagV[1, ]] <- tagV[2, ]
   }
+  m <- enc2utf8(m)
 
   return(m)
 }
@@ -23,6 +24,8 @@ tags_xml2list_df <- function(xml_nodeset) {
       )),
       names = c("key", "value")
     )
+    tags_df$key <- enc2utf8(tags_df$key)
+    tags_df$value <- enc2utf8(tags_df$value)
 
     class(tags_df) <- c("tags_df", "data.frame")
 
@@ -35,7 +38,8 @@ tags_xml2list_df <- function(xml_nodeset) {
 
 ## Changesets ----
 
-# osm_download_changeset() in osmChange xml format. Not related
+# For osm_get_changesets() & osm_query_changesets().
+# osm_download_changeset() in osmChange xml format not related
 
 changeset_xml2DF <- function(xml, tags_in_columns = FALSE) {
   changesets <- xml2::xml_children(xml)
@@ -67,6 +71,7 @@ changeset_xml2DF <- function(xml, tags_in_columns = FALSE) {
   out$changes_count <- as.integer(out$changes_count)
   out$created_at <- as.POSIXct(out$created_at, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
   out$closed_at <- as.POSIXct(out$closed_at, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
+  out$user <- enc2utf8(out$user)
 
   discussion <- xml2::xml_child(changesets, "discussion")
 
@@ -79,6 +84,8 @@ changeset_xml2DF <- function(xml, tags_in_columns = FALSE) {
       comment_text <- xml2::xml_text(xml2::xml_child(x, "text"))
       dis <- data.frame(comment_attrs, comment_text)
       dis$date <- as.POSIXct(dis$date, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
+      dis$user <- enc2utf8(dis$user)
+      dis$comment_text <- enc2utf8(dis$comment_text)
 
       class(dis) <- c("changeset_comments", "data.frame")
 
@@ -202,6 +209,7 @@ object_xml2DF <- function(xml, tags_in_columns = FALSE) {
   out$visible <- ifelse(out$visible == "true", TRUE, FALSE)
   out$version <- as.integer(out$version)
   out$timestamp <- as.POSIXct(out$timestamp, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
+  out$user <- enc2utf8(out$user)
 
   members <- vector("list", length = length(objects))
   members[object_type == "way"] <- lapply(objects[object_type == "way"], function(x) {
@@ -270,11 +278,17 @@ gpx_meta_xml2DF <- function(xml) {
 
   gpx_attrs <- do.call(rbind, xml2::xml_attrs(gpx_files))
   description <- xml2::xml_text(xml2::xml_child(gpx_files, "description"))
-  tags <- lapply(xml2::xml_find_all(gpx_files, ".//tag", flatten = FALSE), xml2::xml_text)
+  tags <- lapply(xml2::xml_find_all(gpx_files, ".//tag", flatten = FALSE), function(x) {
+    x <- xml2::xml_text(x)
+    enc2utf8(x)
+  })
 
   out <- data.frame(gpx_attrs, description)
   out$timestamp <- as.POSIXct(out$timestamp, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
   out$pending <- ifelse(out$pending == "true", TRUE, FALSE)
+  out$name <- enc2utf8(out$name)
+  out$user <- enc2utf8(out$user)
+  out$description <- enc2utf8(out$description)
 
   out$tags <- tags
 
@@ -284,76 +298,145 @@ gpx_meta_xml2DF <- function(xml) {
 
 # GPX files----
 
-gpx_xml2list <- function(xml) {
-  # xml_attrs <- xml2::xml_attrs(xml)
+# https://www.topografix.com/GPX/1/1/
+# https://www.topografix.com/GPX/1/0/
+# https://wiki.openstreetmap.org/wiki/GPX The importer doesn't import waypoints
+# https://github.com/openstreetmap/openstreetmap-website/blob/master/app/controllers/traces_controller.rb
+# https://github.com/openstreetmap/openstreetmap-website/blob/master/app/models/trace.rb only track points imported
 
-  gpx <- xml2::xml_children(xml)
 
-  trk <- gpx[xml2::xml_name(gpx) == "trk"]
-  # xml_find_all(trk, xpath = ".//name") ## TODO: doesn't work :(
+gpx_xml2df <- function(xml) {
+  xml_attrs <- xml2::xml_attrs(xml)
+  gpx_ns_prefix <- get_xns_prefix(xml, ns = c("http://www.topografix.com/GPX/1/1", "http://www.topografix.com/GPX/1/0"))
 
+  metadata <- xml2::xml_find_first(xml, paste0("./", gpx_ns_prefix, ":metadata"))
+  gpx_metadata <- xml2::as_list(metadata)
+  # For bounds as vector when creator="JOSM GPX export"
+  if (xml_attrs["creator"] == "JOSM GPX export") {
+    metadata_nodes <- xml2::xml_children(metadata)
+    metadata_attrs <- xml2::xml_attrs(metadata_nodes)
+    names(metadata_attrs) <- xml2::xml_name(metadata_nodes)
+    metadata_attrs <- metadata_attrs[vapply(metadata_attrs, length, FUN.VALUE = integer(1)) > 0]
+    gpx_metadata <- c(unlist(gpx_metadata, recursive = FALSE), metadata_attrs)
+  }
+
+  trk <- xml2::xml_find_all(xml, paste0(".//", gpx_ns_prefix, ":trk"))
   if (length(trk) == 0) {
-    return(empty_gpx())
+    out <- empty_gpx_df()
+    attributes(out) <- c(attributes(out), list(gpx_attributes = xml_attrs), gpx_metadata)
+  } else if (length(trk) == 1) {
+    out <- trk_xml2df(trk = trk)
+    attributes(out) <- c(attributes(out), list(gpx_attributes = xml_attrs), gpx_metadata)
+    class(out) <- c("osmapi_gps_track", "data.frame")
+  } else if (length(trk) > 1) {
+    warning(
+      "GPX with more than one track. The result will be a list of class `osmapi_gpx`.",
+      "Please, open and issue with the `gpx_id` or the original file if the gpx is not public ",
+      "at https://github.com/ropensci/osmapiR/issues"
+    )
+    out <- gpx_xml2list(xml = xml)
   }
 
-  trkL <- lapply(trk, function(x) {
-    x_ch <- xml2::xml_children(x)
-    x_names <- xml2::xml_name(x_ch)
-
-    trk_details <- structure(xml2::xml_text(x_ch[x_names != "trkseg"]), names = x_names[x_names != "trkseg"])
-
-    trkseg <- x_ch[x_names == "trkseg"]
-
-    trkseg_ch <- xml2::xml_children(trkseg)
-    trkseg_names <- xml2::xml_name(trkseg_ch)
-    trkpt <- trkseg_ch[trkseg_names == "trkpt"]
-    lat_lon <- do.call(rbind, xml2::xml_attrs(trkpt))
-    # xml2::xml_find_all(trkpt, ".//time") ## TODO: doesn't work :(
-
-    elem_points <- lapply(trkpt, function(y) {
-      pt <- xml2::xml_children(y)
-      elem_name <- vapply(pt, xml2::xml_name, FUN.VALUE = character(1))
-      sel <- elem_name %in% c("ele", "time")
-      vals <- structure(
-        vapply(pt[sel], xml2::xml_text, FUN.VALUE = character(1)),
-        names = elem_name[sel]
-      )
-
-      return(vals)
-    })
-    point_data <- do.call(rbind, elem_points)
-
-    trkpt <- data.frame(lat_lon, point_data)
-    if ("time" %in% names(trkpt)) {
-      trkpt$time <- as.POSIXct(trkpt$time, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
-    }
-
-    out <- trkpt
-    attributes(out) <- c(attributes(out), trk_details)
-
-    return(out)
-  })
-
-  if ("metadata" %in% xml2::xml_name(gpx)) {
-    metaL <- xml2::as_list(gpx[xml2::xml_name(gpx) == "metadata"])
-
-    meta <- xml2::xml_children(gpx[xml2::xml_name(gpx) == "metadata"])
-    meta_attrs <- xml2::xml_attrs(meta)
-    names(meta_attrs) <- xml2::xml_name(meta)
-    meta_attrs <- meta_attrs[vapply(meta_attrs, length, FUN.VALUE = integer(1)) > 0]
-
-    attributes(trkL) <- c(attributes(trkL), unlist(metaL, recursive = FALSE), meta_attrs)
-  }
-
-  class(trkL) <- c("osmapi_gpx", class(trkL))
-
-  return(trkL)
+  return(out)
 }
 
 
-empty_gpx <- function() {
+empty_gpx_df <- function() {
+  out <- data.frame(lon = character(), lat = character(), ele = character(), time = as.POSIXct(Sys.time())[-1])
+  class(out) <- c("osmapi_gps_track", "data.frame")
+
+  return(out)
+}
+
+
+gpx_xml2list <- function(xml) {
+  xml_attrs <- xml2::xml_attrs(xml)
+  gpx_ns_prefix <- get_xns_prefix(xml, ns = c("http://www.topografix.com/GPX/1/1", "http://www.topografix.com/GPX/1/0"))
+
+  metadata <- xml2::xml_find_first(xml, paste0("./", gpx_ns_prefix, ":metadata"))
+  gpx_metadata <- xml2::as_list(metadata)
+
+  trk <- xml2::xml_find_all(xml, paste0(".//", gpx_ns_prefix, ":trk"))
+
+  if (length(trk) == 0) {
+    out <- empty_gpx_list()
+    attributes(out) <- c(attributes(out), list(gpx_attributes = xml_attrs), gpx_metadata)
+
+    return(out)
+  }
+
+  out <- lapply(trk, trk_xml2df)
+  names(out) <- vapply(out, function(x) {
+    url <- attr(x, "track")["track_url"]
+    if (is.na(url)) { # for private traces
+      url <- ""
+    }
+    url
+  }, FUN.VALUE = character(1))
+
+  attributes(out) <- c(attributes(out), list(gpx_attributes = xml_attrs), gpx_metadata)
+  class(out) <- c("osmapi_gpx", class(out))
+
+  return(out)
+}
+
+
+empty_gpx_list <- function() {
   out <- list()
   class(out) <- c("osmapi_gpx", "list")
+
+  return(out)
+}
+
+
+trk_xml2df <- function(trk) {
+  gpx_ns_prefix <- get_xns_prefix(trk, ns = c("http://www.topografix.com/GPX/1/1", "http://www.topografix.com/GPX/1/0"))
+
+  details <- xml2::xml_find_all(trk, "./*[not(name() = 'trkseg')]") # no trkseg nodes
+  trk_details <- stats::setNames(xml2::xml_text(details), nm = xml2::xml_name(details))
+  trk_details <- enc2utf8(trk_details)
+  if (length(trk_details)) {
+    names(trk_details) <- paste0("track_", names(trk_details))
+  }
+
+  ## TODO: extract and group points by segments?
+  # trkseg <- xml2::xml_find_all(trk, paste0(gpx_ns_prefix, "trkseg"))
+  # if (length(trkseg) > 1) warning("More than one gpx segment)
+
+  trkpt <- xml2::xml_find_all(trk, paste0(".//", gpx_ns_prefix, ":trkpt"))
+  lat_lon <- do.call(rbind, xml2::xml_attrs(trkpt)) # lat lon
+  out <- as.data.frame(lat_lon)
+
+  ele <- xml2::xml_text(xml2::xml_find_all(trkpt, paste0(".//", gpx_ns_prefix, ":ele")))
+  if (length(ele) > 0) {
+    out$ele <- ele
+  }
+  time <- xml2::xml_text(xml2::xml_find_all(trkpt, paste0(".//", gpx_ns_prefix, ":time")))
+  if (length(time) > 0) {
+    out$time <- as.POSIXct(time, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
+  }
+
+
+  ## Extensions (https://www8.garmin.com/xmlschemas/GpxExtensions/v3/GpxExtensionsv3.xsd)
+  namespaces <- xml2::xml_ns(trk)
+  if ("http://www.garmin.com/xmlschemas/TrackPointExtension/v1" %in% namespaces) {
+    trkpt_ext_ns_prefix <- get_xns_prefix(trk, ns = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1")
+    tpe <- xml2::xml_find_all(trk, paste0(".//", trkpt_ext_ns_prefix, ":TrackPointExtension"))
+    ext <- lapply(tpe, function(x) {
+      out <- xml2::xml_children(x)
+      stats::setNames(xml2::xml_text(out), nm = xml2::xml_name(out))
+    })
+    ext <- do.call(rbind, ext)
+    out <- cbind(out, ext)
+  }
+  # other_extensions_ns <- c(
+  #   "http://www.garmin.com/xmlschemas/GpxExtensions/v3",
+  #   "http://www.garmin.com/xmlschemas/ActivityExtension/v2",
+  #   "http://www.garmin.com/xmlschemas/FitnessExtension/v1",
+  #   "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"
+  # )
+
+  attributes(out) <- c(attributes(out), list(track = trk_details))
 
   return(out)
 }
@@ -408,6 +491,9 @@ user_details_xml2DF <- function(xml) {
 
   out$account_created <- as.POSIXct(out$account_created, format = "%Y-%m-%dT%H:%M:%OS", tz = "GMT")
 
+  out$display_name <- enc2utf8(out$display_name)
+  out$description <- enc2utf8(out$description)
+
   return(out)
 }
 
@@ -447,6 +533,9 @@ logged_user_details_xml2list <- function(xml) {
     )
   )
 
+  out$user["display_name"] <- enc2utf8(out$user["display_name"])
+  out$description <- enc2utf8(out$description)
+
   return(out)
 }
 
@@ -461,6 +550,8 @@ user_preferences_xml2DF <- function(xml) {
     as.data.frame(do.call(rbind, xml2::xml_attrs(preference))),
     names = c("key", "value")
   )
+  out$key <- enc2utf8(out$key)
+  out$value <- enc2utf8(out$value)
 
   return(out)
 }
@@ -498,6 +589,9 @@ note_xml2DF <- function(xml) {
 
     comm <- data.frame(date, uid, user, user_url, action, text, html)
     comm$date <- as.POSIXct(comm$date, format = "%Y-%m-%d %H:%M:%OS", tz = "GMT")
+    comm$user <- enc2utf8(comm$user)
+    comm$text <- enc2utf8(comm$text)
+    comm$html <- enc2utf8(comm$html)
 
     class(comm) <- c("note_comments", "data.frame")
 
@@ -525,4 +619,23 @@ empty_notes <- function() {
   class(out) <- c("osmapi_map_notes", "data.frame")
 
   return(out)
+}
+
+
+## Utils ----
+
+get_xns_prefix <- function(xml, ns) {
+  namespaces <- xml2::xml_ns(xml)
+  ns_prefix <- names(namespaces)[namespaces %in% ns]
+
+  if (length(ns_prefix) == 1) {
+    xpath_prefix <- ns_prefix
+  } else {
+    xpath_prefix <- ""
+    if (length(ns_prefix) > 1) {
+      warning("More than one namespace: ", paste(namespaces[namespaces %in% ns], collapse = ", "))
+    }
+  }
+
+  return(xpath_prefix)
 }

@@ -11,26 +11,36 @@ osm_get_data_gpx(gpx_id, format)
 
 \item{format}{Format of the output. If missing (default), the response will be the exact file that was uploaded.
 If \code{"R"}, a \code{data.frame}.
+If \code{"sf_lines"} (\code{"sf"} is a synonym for \code{"sf_lines"}) or \code{"sf_points"},  a \code{sf} object  from package \pkg{sf}.
 If \code{"gpx"}, the response will always be a GPX format file.
-If \code{"xml"}, a \code{"xml"} file in an undocumented format.}
+If \code{"xml"}, a \code{xml} file in an undocumented format.}
 }
 \value{
-If missing \code{format}, returns a \link[xml2:oldclass]{xml2::xml_document} with the original file data. If \code{format = "R"}, returns a
-data frame with one point per row. If \code{format = "gpx"}, returns a \link[xml2:oldclass]{xml2::xml_document} in the GPX format. If
-\code{format = "xml"}, returns a \link[xml2:oldclass]{xml2::xml_document} in an undocumented format.
+If missing \code{format}, returns a \link[xml2:oldclass]{xml2::xml_document} with the original file data.
+If \code{format = "R"}, returns a data frame with one point per row and the attributes extracted from the xml response.
+If \code{format = "sf*"}, returns a \code{sf} object from \pkg{sf} (see \code{\link[=st_as_sf]{st_as_sf()}} for details).
+If \code{format = "gpx"}, returns a \link[xml2:oldclass]{xml2::xml_document} in the GPX format.
+If \code{format = "xml"}, returns a \link[xml2:oldclass]{xml2::xml_document} in an undocumented format.
 }
 \description{
-Use this to download the full GPX file. Available without authentication if the file is marked public. Otherwise only
-usable by the owner account and requires authentication.
+Use this to download the full GPX file. Private and trackable traces are only available by the owner account.
+Requires authentication.
 }
 \note{
-If you request refers to a multi-file archive the response when you force gpx or xml format will consist of a
-non-standard simple concatenation of the files.
+If you request refers to a multi-file archive the response when you force \code{gpx} or \code{xml} format will consist of
+a non-standard simple concatenation of the files.
+
+Extended data following schema \href{https://www8.garmin.com/xmlschemas/GpxExtensions/v3/GpxExtensionsv3.xsd}{\verb{http://www.garmin.com/xmlschemas/TrackPointExtension/v1}}
+in gpx files will be extracted for \code{format = "R"} and \code{format = "sf_points"}, but lost for \code{format = "sf_line"}.
 }
 \examples{
 \dontrun{
 trk_data <- osm_get_data_gpx(gpx_id = 3498170, format = "R")
 trk_data
+
+## get attributes
+attr(trk_data, "track")
+attr(trk_data, "gpx_attributes")
 }
 }
 \seealso{

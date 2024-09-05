@@ -51,9 +51,9 @@
 #'   degrees, expressing a valid bounding box. The maximal width (`right - left`) and height (`top - bottom`) of the
 #'   bounding box is 0.25 degree.
 #' @param page_number Specifies which group of 5,000 points, or page, to return. Since the command does not return more
-#'   than 5,000 points at a time, this parameter must be incremented —and the command sent again (using the same bounding
-#'   box)— in order to retrieve all of the points for a bounding box that contains more than 5,000 points. When this
-#'   parameter is 0 (zero), the command returns the first 5,000 points; when it is 1, the command returns points
+#'   than 5,000 points at a time, this parameter must be incremented —and the command sent again (using the same
+#'   bounding box)— in order to retrieve all of the points for a bounding box that contains more than 5,000 points. When
+#'   this parameter is 0 (zero), the command returns the first 5,000 points; when it is 1, the command returns points
 #'   5,001–10,000, etc.
 #' @param format Format of the output. Can be `"R"` (default) or `"gpx"`.
 #'
@@ -109,13 +109,6 @@
 
   if (format == "R") {
     out <- gpx_xml2list(obj_xml)
-    names(out) <- vapply(out, function(x) {
-      url <- attr(x, "url")
-      if (is.null(url)) { # for private traces?
-        url <- ""
-      }
-      url
-    }, FUN.VALUE = character(1))
   } else {
     out <- obj_xml
   }
@@ -233,7 +226,7 @@ osm_create_gpx <- function(file, description, tags, visibility = c("private", "p
 #' @examples
 #' vignette("how_to_edit_gps_traces", package = "osmapiR")
 osm_update_gpx <- function(gpx_id, name, description, tags,
-                           visibility = c("private", "public", "trackable", "identifiable")) {
+                           visibility = c("private", "public", "trackable", "identifiable")) { # TODO: format = c("R", "xml")
   visibility <- match.arg(visibility)
   stopifnot(!missing(description))
 
@@ -371,27 +364,34 @@ osm_get_metadata_gpx <- function(gpx_id, format = c("R", "xml")) {
 # The response will always be a GPX format file if you use a '''.gpx''' URL suffix, a XML file in an undocumented format if you use a '''.xml''' URL suffix, otherwise the response will be the exact file that was uploaded.
 #
 # NOTE: if you request refers to a multi-file archive the response when you force gpx or xml format will consist of a non-standard simple concatenation of the files.
-
+## TODO Available without authentication if the file is marked public is FALSE. API error?
 
 
 #' Download GPS Track Data
 #'
-#' Use this to download the full GPX file. Available without authentication if the file is marked public. Otherwise only
-#' usable by the owner account and requires authentication.
+#' Use this to download the full GPX file. Private and trackable traces are only available by the owner account.
+#' Requires authentication.
 #'
 #' @param gpx_id The track id represented by a numeric or a character value.
 #' @param format Format of the output. If missing (default), the response will be the exact file that was uploaded.
 #'   If `"R"`, a `data.frame`.
+#'   If `"sf_lines"` (`"sf"` is a synonym for `"sf_lines"`) or `"sf_points"`,  a `sf` object  from package \pkg{sf}.
 #'   If `"gpx"`, the response will always be a GPX format file.
-#'   If `"xml"`, a `"xml"` file in an undocumented format.
+#'   If `"xml"`, a `xml` file in an undocumented format.
 #'
-#' @note If you request refers to a multi-file archive the response when you force gpx or xml format will consist of a
-#'   non-standard simple concatenation of the files.
+#' @note If you request refers to a multi-file archive the response when you force `gpx` or `xml` format will consist of
+#'   a non-standard simple concatenation of the files.
+#'
+#'   Extended data following schema [`http://www.garmin.com/xmlschemas/TrackPointExtension/v1`](https://www8.garmin.com/xmlschemas/GpxExtensions/v3/GpxExtensionsv3.xsd)
+#'   in gpx files will be extracted for `format = "R"` and `format = "sf_points"`, but lost for `format = "sf_line"`.
 #'
 #' @return
-#' If missing `format`, returns a [xml2::xml_document-class] with the original file data. If `format = "R"`, returns a
-#' data frame with one point per row. If `format = "gpx"`, returns a [xml2::xml_document-class] in the GPX format. If
-#' `format = "xml"`, returns a [xml2::xml_document-class] in an undocumented format.
+#' If missing `format`, returns a [xml2::xml_document-class] with the original file data.
+#' If `format = "R"`, returns a data frame with one point per row and the attributes extracted from the xml response.
+#' If `format = "sf*"`, returns a `sf` object from \pkg{sf} (see [st_as_sf()] for details).
+#' If `format = "gpx"`, returns a [xml2::xml_document-class] in the GPX format.
+#' If `format = "xml"`, returns a [xml2::xml_document-class] in an undocumented format.
+#'
 #' @family get GPS' functions
 #' @export
 #'
@@ -399,17 +399,25 @@ osm_get_metadata_gpx <- function(gpx_id, format = c("R", "xml")) {
 #' \dontrun{
 #' trk_data <- osm_get_data_gpx(gpx_id = 3498170, format = "R")
 #' trk_data
+#'
+#' ## get attributes
+#' attr(trk_data, "track")
+#' attr(trk_data, "gpx_attributes")
 #' }
 osm_get_data_gpx <- function(gpx_id, format) {
   if (missing(format)) {
     ext <- "data"
   } else {
-    stopifnot(format %in% c("R", "xml", "gpx"))
+    format <- match.arg(format, c("R", "sf", "sf_line", "sf_points", "xml", "gpx"))
     if (format == "gpx") {
       ext <- "data.gpx"
     } else {
       ext <- "data.xml"
     }
+  }
+
+  if (!missing(format) && format == "sf" && !requireNamespace("sf", quietly = TRUE)) {
+    stop("Missing `sf` package. Install with:\n\tinstall.package(\"sf\")")
   }
 
   req <- osmapi_request(authenticate = TRUE)
@@ -421,22 +429,11 @@ osm_get_data_gpx <- function(gpx_id, format) {
 
   if (missing(format) || format %in% c("xml", "gpx")) {
     out <- obj_xml
-  } else {
-    out <- gpx_xml2list(obj_xml)
+  } else { # format %in% c("R", "sf", "sf_line", "sf_points")
+    out <- gpx_xml2df(obj_xml)
 
-    if (length(out) > 1) {
-      warning(
-        "Unexpected output format at osm_get_data_gpx().",
-        "Please, open and issue with the `gpx_id` or the original file if the gpx is not public ",
-        "at https://github.com/jmaspons/osmapiR/issues"
-      )
-    } else {
-      attrs <- attributes(out)
-      attrs <- attrs[setdiff(names(attrs), "class")]
-      names(attrs) <- paste0("gpx_", names(attrs))
-      out <- out[[1]]
-      attributes(out) <- c(attributes(out), attrs)
-      class(out) <- c("osmapi_gps_track", "data.frame")
+    if (format %in% c("sf", "sf_line", "sf_points")) {
+      out <- sf::st_as_sf(out, format = if (format %in% c("sf", "sf_line")) "line" else "points")
     }
   }
 
@@ -470,11 +467,12 @@ osm_get_data_gpx <- function(gpx_id, format) {
 #'
 #' Use this to get a list of GPX traces owned by the authenticated user. Requires authentication.
 #'
-#' @param format Format of the output. Can be `"R"` (default) or `"xml"`.
+#' @param format Format of the output. Can be `"R"` (default), `"sf"` or `"xml"`.
 #'
 #' @return
-#' If `format = "R"`, returns a data frame with one trace per row. If `format = "xml"`, returns a
-#' [xml2::xml_document-class] similar to [osm_get_gpx_metadata()]. Example:
+#' Results with the same format as [osm_get_gpx_metadata()]. If `format = "R"`, returns a data frame with one trace
+#' per row. If `format = "sf"`, returns a `sf` object from \pkg{sf}. If `format = "xml"`, returns a
+#' [xml2::xml_document-class]. Example:
 #' ``` xml
 #' <?xml version="1.0" encoding="UTF-8"?>
 #' <osm version="0.6" generator="OpenStreetMap server">
@@ -498,8 +496,12 @@ osm_get_data_gpx <- function(gpx_id, format) {
 #' traces <- osm_list_gpxs()
 #' traces
 #' }
-osm_list_gpxs <- function(format = c("R", "xml")) {
+osm_list_gpxs <- function(format = c("R", "sf", "xml")) {
   format <- match.arg(format)
+  if (format == "sf" && !requireNamespace("sf", quietly = TRUE)) {
+    stop("Missing `sf` package. Install with:\n\tinstall.package(\"sf\")")
+  }
+
   req <- osmapi_request(authenticate = TRUE)
   req <- httr2::req_method(req, "GET")
   req <- httr2::req_url_path_append(req, "user", "gpx_files")
@@ -507,8 +509,13 @@ osm_list_gpxs <- function(format = c("R", "xml")) {
   resp <- httr2::req_perform(req)
   obj_xml <- httr2::resp_body_xml(resp)
 
-  if (format == "R") {
+  if (format %in% c("R", "sf")) {
     out <- gpx_meta_xml2DF(obj_xml)
+    if (format == "sf") {
+      out <- sf::st_as_sf(out, coords = c("lon", "lat"), crs = sf::st_crs(4326))
+    }
+  } else { # format == "xml"
+    out <- obj_xml
   }
 
   return(out)

@@ -44,14 +44,12 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' obj <- osm_get_objects(
 #'   osm_type = c("node", "way", "way", "relation", "relation", "node"),
 #'   osm_id = c("35308286", "13073736", "235744929", "40581", "341530", "1935675367"),
 #'   version = c(1, 3, 2, 5, 7, 1)
 #' )
 #' obj
-#' }
 osm_get_objects <- function(osm_type, osm_id, version, full_objects = FALSE,
                             format = c("R", "xml", "json"), tags_in_columns = FALSE) {
   format <- match.arg(format)
@@ -99,30 +97,15 @@ osm_get_objects <- function(osm_type, osm_id, version, full_objects = FALSE,
   if (full_objects) {
     out <- mapply(function(type, ids) {
       if (type %in% c("way", "relation")) {
-        full_objL <- lapply(ids$id, function(id) {
+        full_obj <- lapply(ids$id, function(id) {
           osm_full_object(osm_type = type, osm_id = id, format = format)
         })
-
-        if (format == "R") {
-          full_obj <- do.call(rbind, full_objL)
-        } else if (format == "xml") {
-          full_obj <- xml2::xml_new_root(full_objL[[1]])
-          for (i in seq_len(length(full_objL) - 1)) {
-            for (j in seq_len(xml2::xml_length(full_objL[[i + 1]]))) {
-              xml2::xml_add_child(full_obj, xml2::xml_child(full_objL[[i + 1]], search = j))
-            }
-          }
-        } else if (format == "json") {
-          full_obj <- full_objL[[1]]
-          if (length(full_objL) > 1) {
-            full_obj$elements <- do.call(c, c(list(full_obj$elements), lapply(full_objL[-1], function(x) x$elements)))
-          }
-        }
       } else {
-        full_obj <- osm_fetch_objects(osm_type = paste0(type, "s"), osm_ids = ids$id, format = format)
+        full_obj <- list(osm_fetch_objects(osm_type = paste0(type, "s"), osm_ids = ids$id, format = format))
       }
       full_obj
     }, type = names(type_idL), ids = type_idL, SIMPLIFY = FALSE)
+    out <- unlist(out, recursive = FALSE)
   } else { # no full_objects
     type_plural <- paste0(names(type_idL), "s") # type in plural for osm_fetch_objects()
 
@@ -144,38 +127,37 @@ osm_get_objects <- function(osm_type, osm_id, version, full_objects = FALSE,
     # Order by types (node, way, relation)
 
     if (format == "R") {
-      out <- do.call(rbind, out[intersect(c("node", "way", "relation"), names(out))])
-      out <- rbind(out[out$type == "node", ], out[out$type == "way", ])
-      out <- rbind(out, out[out$type == "relation", ])
+      out <- do.call(rbind, out)
+      out <- rbind(out[out$type == "node", ], out[out$type == "way", ], out[out$type == "relation", ])
       rownames(out) <- NULL
 
       if (tags_in_columns) {
         out <- tags_list2wide(out)
       }
     } else if (format == "xml") {
-      ## TODO: test. Use xml2::xml_find_all()?
-      out <- out[intersect(c("node", "way", "relation"), names(out))]
-      out_ordered <- xml2::xml_new_root(out[[1]])
-      for (i in seq_len(length(out) - 1)) {
-        for (j in seq_len(xml2::xml_length(out[[i + 1]]))) {
-          xml2::xml_add_child(out_ordered, xml2::xml_child(out[[i + 1]], search = j))
-        }
+      nodes <- lapply(out, xml2::xml_find_all, xpath = "./node")
+      ways <- lapply(out, xml2::xml_find_all, xpath = "./way")
+      relations <- lapply(out, xml2::xml_find_all, xpath = "./relation")
+      ord <- c(nodes, ways, relations)
+      ord <- ord[vapply(ord, length, FUN.VALUE = integer(1)) > 0]
+
+      out_ordered <- out[[1]]
+      xml2::xml_remove(xml2::xml_children(out_ordered))
+      for (i in seq_along(ord)) {
+        lapply(ord[[i]], function(node) {
+          xml2::xml_add_child(out_ordered, node)
+        })
       }
+
       out <- out_ordered
     } else if (format == "json") {
-      ord_out <- lapply(out, function(x) {
-        vapply(x$elements, function(y) do.call(paste, y[names(type_id)]), FUN.VALUE = character(1))
-      })
-      ord <- unlist(ord_out[intersect(c("node", "way", "relation"), names(ord_out))])
-      ord <- c(ord[grep("^node", ord)], ord[grep("^way", ord)], ord[grep("^relation", ord)])
-      ord <- data.frame(type = gsub("[0-9]+$", "", names(ord)), pos = as.integer(gsub("^[a-z.]+", "", names(ord))))
-      ord$pos[is.na(ord$pos)] <- 1 # for types with only 1 object
+      outL <- out[[1]]
+      outL$elements <- do.call(c, c(list(outL$elements), lapply(out[-1], function(x) x$elements)))
+      ord_out <- vapply(outL$elements, function(y) do.call(paste, y[names(type_id)]), FUN.VALUE = character(1))
+      ord <- c(ord_out[grep("^node", ord_out)], ord_out[grep("^way", ord_out)], ord_out[grep("^relation", ord_out)])
 
-      out_ordered <- out[[1]][setdiff(names(out[[1]]), "elements")]
-      out_ordered$elements <- apply(ord, 1, function(x) {
-        out[[x[1]]]$elements[[as.integer(x[2])]]
-      }, simplify = FALSE)
-      out <- out_ordered
+      outL$elements <- outL$elements[match(ord, ord_out)]
+      out <- outL
     }
   } else {
     ## Original order

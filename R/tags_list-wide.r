@@ -25,9 +25,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' peaks_wide <- osm_get_objects(
-#'   osm_type = "nodes", osm_id = c(35308286, 1935675367), tags_in_columns = TRUE
+#'   osm_type = "node", osm_id = c(35308286, 1935675367), tags_in_columns = TRUE
 #' )
 #' peaks_list <- tags_wide2list(peaks_wide)
 #'
@@ -38,10 +37,9 @@
 #' peaks_wide[!is.na(peaks_wide$prominence), ]
 #' peaks_list[sapply(peaks_list$tags, function(x) any(x$key == "prominence")), ]
 #'
-#' cities_list <- osm_get_objects(osm_type = "relations", osm_id = c("40581", "341530"))
+#' cities_list <- osm_get_objects(osm_type = "relation", osm_id = c("40581", "341530"))
 #' # Column name clash:
 #' cities_wide <- tags_list2wide(cities_list)
-#' }
 tags_list2wide <- function(x) {
   if (!inherits(x, "osmapi_objects") && !inherits(x, "osmapi_changesets")) {
     stop("x must be an `osmapi_objects` or `osmapi_changesets` object.")
@@ -56,12 +54,16 @@ tags_list2wide <- function(x) {
   cols <- sort(unique(unlist(lapply(x$tags, function(y) y$key))))
   # WARNING: sort different than API ([A-Z][a-z][0-9] vs [0-9][a-z][A-Z])
 
-  tags_wide <- structure(
-    t(vapply(x$tags, function(y) structure(y$value, names = y$key)[cols], FUN.VALUE = character(length(cols)))),
-    dimnames = list(NULL, cols)
-  )
+  tags_wide <- vapply(x$tags, function(y) structure(y$value, names = y$key)[cols], FUN.VALUE = character(length(cols)))
+  # deal with vapply always simplifying result
+  if (length(cols) == 1) {
+    tags_wide <- as.matrix(tags_wide)
+  } else {
+    tags_wide <- t(tags_wide)
+  }
+  dimnames(tags_wide) <- list(NULL, cols)
 
-  out <- x[, setdiff(names(x), "tags")]
+  out <- x[, setdiff(names(x), "tags"), drop = FALSE]
   if (inherits(x, "osmapi_objects")) {
     names(out) <- gsub("^(type|id)$", "osm_\\1", names(out))
   }
@@ -90,7 +92,7 @@ tags_wide2list <- function(x) {
   }
 
   keys <- attr(x, "tag_columns")
-  tags_list <- apply(x[, keys], 1, function(y) {
+  tags_list <- apply(x[, keys, drop = FALSE], 1, function(y) {
     out <- stats::na.omit(data.frame(key = names(keys), value = y, row.names = NULL))
 
     attr(out, "na.action") <- NULL
@@ -100,7 +102,7 @@ tags_wide2list <- function(x) {
     return(out)
   }, simplify = FALSE)
 
-  out <- x[, -keys]
+  out <- x[, -keys, drop = FALSE]
   out$tags <- tags_list
 
   if (inherits(x, "osmapi_objects")) {

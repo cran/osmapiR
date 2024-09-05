@@ -1,6 +1,13 @@
 # inspired by osmdata package
 
 .onLoad <- function(libname, pkgname) { # nocov start
+  # register S3 methods for a generic in a suggested package
+  s3_register("sf::st_as_sf", "osmapi_map_notes")
+  s3_register("sf::st_as_sf", "osmapi_changesets")
+  s3_register("sf::st_as_sf", "osmapi_gps_track")
+  s3_register("sf::st_as_sf", "osmapi_gpx")
+
+
   op <- options()
 
   if (!"osmapir.osmapir_version" %in% names(op)) {
@@ -10,7 +17,7 @@
   if (!"osmapir.user_agent" %in% names(op)) {
     options(
       osmapir.user_agent = paste(
-        "osmapiR", getOption("osmapir.osmapir_version"), "(https://github.com/jmaspons/osmapiR)"
+        "osmapiR", getOption("osmapir.osmapir_version"), "(https://github.com/ropensci/osmapiR)"
       )
     )
   }
@@ -24,11 +31,11 @@
   }
 
   if (!"osmapir.oauth_id" %in% names(op)) {
-    options(osmapir.oauth_id = "cxMGJjSNnEGiKHAdp0pGq54XtQPTSyuTOu-nVJ4P6FE")
+    options(osmapir.oauth_id = "kROTgNMsqmMNusvGXhuQlXBbNaUjSwkrGehdBMqE2jo")
   }
 
   if (!"osmapir.oauth_secret" %in% names(op)) {
-    options(osmapir.oauth_secret = "L9o3QNmMC-rn8Hl6qcJrCpkty2QUCJPAWoiB2lIwawoZup_gfImaV9iUfGSZIeZSLP_s89qiFrbAH_Y")
+    options(osmapir.oauth_secret = "VowQ59fpIRjZepLYkVpybvXBfVcZnCJNYUYLXeVxGLC1rLPVTb_oMEDe6px6ceSCH7Y-B57nvc8ilhc")
   }
 
   if (!"osmapir.cache_authentication" %in% names(op)) {

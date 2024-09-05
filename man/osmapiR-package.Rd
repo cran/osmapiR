@@ -13,7 +13,7 @@ An R interface to \href{https://wiki.openstreetmap.org/wiki/API_v0.6}{OpenStreet
 geodata from/to the OpenStreetMap database. This package allows to access OSM maps data as well as map notes, GPS
 traces, changelogs and users data. To access the OSM map data for purposes other than editing or exploring the
 history of the objects see
-\href{https://github.com/jmaspons/osmapiR/blob/main/README.md#related-packages}{Related packages}.
+\href{https://github.com/ropensci/osmapiR/blob/main/README.md#related-packages}{Related packages}.
 
 You are responsible for following the \href{https://operations.osmfoundation.org/policies/api/}{API Usage Policy}.
 You can modify the user agent of the requests by setting the option \code{osmapir.user_agent}:
@@ -216,6 +216,9 @@ osmchange to modify existing OSM objects
 
 \code{\link[=tags_list2wide]{tags_list2wide()}} \code{\link[=tags_wide2list]{tags_wide2list()}}
 Change tags from a list column <-> columns for each key in wide format
+
+\code{\link[=st_as_sf]{st_as_sf()}}
+Convert osmapiR objects to sf objects
 }
 
 \subsection{API}{
@@ -252,9 +255,9 @@ Redact an object version
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://jmaspons.github.io/osmapiR/}
-  \item \url{https://github.com/jmaspons/osmapiR}
-  \item Report bugs at \url{https://github.com/jmaspons/osmapiR/issues}
+  \item \url{https://docs.ropensci.org/osmapiR/}
+  \item \url{https://github.com/ropensci/osmapiR}
+  \item Report bugs at \url{https://github.com/ropensci/osmapiR/issues}
 }
 
 }
@@ -264,7 +267,7 @@ Useful links:
 Other contributors:
 \itemize{
   \item Jon Harmon (\href{https://orcid.org/0000-0003-4781-4346}{ORCID}) (Jon reviewed the package for rOpenSci, see https://github.com/ropensci/software-review/issues/633) [reviewer]
-  \item Carlos Cámara (Carles reviewed the package for rOpenSci, see https://github.com/ropensci/software-review/issues/633) [reviewer]
+  \item Carlos Cámara (\href{https://orcid.org/0000-0002-9378-0549}{ORCID}) (Carles reviewed the package for rOpenSci, see https://github.com/ropensci/software-review/issues/633) [reviewer]
 }
 
 }

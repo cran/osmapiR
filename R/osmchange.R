@@ -26,7 +26,6 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' obj <- osm_get_objects(
 #'   osm_type = c("node", "way", "way", "relation", "relation", "node"),
 #'   osm_id = c("35308286", "13073736", "235744929", "40581", "341530", "1935675367"),
@@ -34,7 +33,6 @@
 #' )
 #' osmch <- osmchange_modify(obj)
 #' osmch
-#' }
 osmchange_modify <- function(x, tag_keys, members = FALSE, lat_lon = FALSE, format = c("R", "osc", "xml")) {
   format <- match.arg(format)
   stopifnot(inherits(x, "osmapi_objects"))
@@ -46,6 +44,7 @@ osmchange_modify <- function(x, tag_keys, members = FALSE, lat_lon = FALSE, form
   if (inherits(x, "tags_wide")) {
     x <- tags_wide2list(x)
   }
+  stopifnot(c("type", "id") %in% colnames(x))
 
   if (missing(tag_keys)) { # Update all tags
     tags_upd <- x$tags
@@ -149,13 +148,11 @@ osmchange_modify <- function(x, tag_keys, members = FALSE, lat_lon = FALSE, form
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' obj_id <- osmapi_objects(data.frame(
 #'   type = c("way", "way", "relation", "node"),
 #'   id = c("722379703", "629132242", "8387952", "4739010921")
 #' ))
 #' osmchange_del <- osmchange_delete(obj_id)
-#' }
 osmchange_delete <- function(x, delete_if_unused = FALSE, format = c("R", "osc", "xml")) {
   format <- match.arg(format)
 
@@ -166,6 +163,8 @@ osmchange_delete <- function(x, delete_if_unused = FALSE, format = c("R", "osc",
   if (inherits(x, "tags_wide")) {
     x <- tags_wide2list(x)
   }
+  stopifnot(c("type", "id") %in% colnames(x))
+
   x_type <- split(x, x$type)
   osmchange <- lapply(x_type, function(y) osm_fetch_objects(osm_type = unique(y$type), osm_ids = y$id))
   osmchange <- do.call(rbind, osmchange[c("relation", "way", "node")]) # sort to avoid deleting members of existing objs

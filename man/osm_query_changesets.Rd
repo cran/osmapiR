@@ -14,7 +14,7 @@ osm_query_changesets(
   changeset_ids,
   order = c("newest", "oldest"),
   limit = getOption("osmapir.api_capabilities")$api$changesets["default_query_limit"],
-  format = c("R", "xml", "json"),
+  format = c("R", "sf", "xml", "json"),
   tags_in_columns = FALSE
 )
 }
@@ -39,14 +39,15 @@ reached the element limit for a changeset (10,000 at the moment \code{osm_capabi
 
 \item{limit}{Specifies the maximum number of changesets returned. 100 as the default value.}
 
-\item{format}{Format of the output. Can be \code{"R"} (default), \code{"xml"}, or \code{"json"}.}
+\item{format}{Format of the output. Can be \code{"R"} (default), \code{"sf"}, \code{"xml"}, or \code{"json"}.}
 
 \item{tags_in_columns}{If \code{FALSE} (default), the tags of the changesets are saved in a single list column \code{tags}
 containing a \code{data.frame} for each changeset with the keys and values. If \code{TRUE}, add a column for each key.
 Ignored if \code{format != "R"}.}
 }
 \value{
-If \code{format = "R"}, returns a data frame with one OSM changeset per row.
+If \code{format = "R"}, returns a data frame with one OSM changeset per row. If \code{format = "sf"}, returns a \code{sf} object
+from \pkg{sf}.
 \subsection{\code{format = "xml"}}{
 
 Returns a \link[xml2:oldclass]{xml2::xml_document} with the following format:
@@ -120,7 +121,6 @@ Te valid formats for \code{time} and \code{time_2} parameters are anything that
 \href{https://ruby-doc.org/stdlib-2.7.0/libdoc/time/rdoc/Time.html#method-c-parse}{\code{Time.parse} Ruby function} will parse.
 }
 \examples{
-\dontrun{
 chst_ids <- osm_query_changesets(changeset_ids = c(137627129, 137625624))
 chst_ids
 
@@ -138,7 +138,6 @@ chsts2 <- osm_query_changesets(
   closed = TRUE
 )
 chsts2
-}
 }
 \seealso{
 Other get changesets' functions: 
