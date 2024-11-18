@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -355,7 +355,7 @@ details.</p>
 account and make calls to <a href="https://master.apis.dev.openstreetmap.org" class="uri">https://master.apis.dev.openstreetmap.org</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># set_osmapi_connection(server = &quot;testing&quot;) # lacks data for the following examples</span></span></code></pre></div>
 <p>To modify the default user agent of the requests
-(<code>osmapiR 0.2.1 (https://github.com/ropensci/osmapiR)</code>), set
+(<code>osmapiR 0.2.2 (https://github.com/ropensci/osmapiR)</code>), set
 the option <code>osmapir.user_agent</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">osmapir.user_agent =</span> <span class="st">&quot;my new user agent&quot;</span>)</span></code></pre></div>
 </div>
@@ -390,8 +390,8 @@ the option <code>osmapir.user_agent</code>:</p>
 <span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; 1 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
 <span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; 2 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
 <span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 3 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 4 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># obj_history$tags # tags in list format</span></span></code></pre></div>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 4 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co"># obj_history$tags # tags in list format</span></span></code></pre></div>
 <p>Notice the different formats to represent the tags controlled by the
 <code>tags_in_columns</code> argument. In <code>osm_objs</code>, every
 tag is represented by a column in the data.frame (wide format), while in
@@ -401,117 +401,105 @@ list of data.frames with <code>key</code> and <code>value</code> columns
 </div>
 <div id="changesets" class="section level2">
 <h2>Changesets</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>chsts <span class="ot">&lt;-</span> <span class="fu">osm_query_changesets</span>(</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">bbox =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.241112</span>, <span class="fl">38.0294955</span>, <span class="fl">8.4203171</span>, <span class="fl">42.9186456</span>),</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">&quot;Mementomoristultus&quot;</span>,</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">time =</span> <span class="st">&quot;2023-06-22T02:23:23Z&quot;</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">time_2 =</span> <span class="st">&quot;2023-06-22T00:38:20Z&quot;</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>)</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>chsts</span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt;          id          created_at           closed_at  open               user</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; 1 137627138 2023-06-22 02:24:02 2023-06-22 02:24:02 FALSE Mementomoristultus</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 2 137627132 2023-06-22 02:23:42 2023-06-22 02:23:42 FALSE Mementomoristultus</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; 3 137627129 2023-06-22 02:23:23 2023-06-22 02:23:24 FALSE Mementomoristultus</span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;        uid    min_lat   min_lon    max_lat   max_lon comments_count</span></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 1 19648429 39.8900207 4.2663878 39.8900310 4.2663905              0</span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; 2 19648429 39.8894901 4.2661856 39.8894922 4.2662071              0</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; 3 19648429 39.8308943 4.1564704 40.0215358 4.3280260              0</span></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;   changes_count</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; 1             1</span></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; 2             1</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; 3             2</span></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt;                                                                                  tags</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; 1 6 tags: changesets_count=156 | comment=--- | created_by=iD 2.25.2 | host=https:/...</span></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; 2 6 tags: changesets_count=155 | comment=--- | created_by=iD 2.25.2 | host=https:/...</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; 3 6 tags: changesets_count=154 | comment=--- | created_by=iD 2.25.2 | host=https:/...</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>osmchange <span class="ot">&lt;-</span> <span class="fu">osm_download_changeset</span>(<span class="at">changeset_id =</span> <span class="dv">137595351</span>, <span class="at">format =</span> <span class="st">&quot;xml&quot;</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>osmchange</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; {xml_document}</span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; &lt;osmChange version=&quot;0.6&quot; generator=&quot;openstreetmap-cgimap 2.0.1 (1870 spike-06.openstreetmap.org)&quot; copyright=&quot;OpenStreetMap and contributors&quot; attribution=&quot;http://www.openstreetmap.org/copyright&quot; license=&quot;http://opendatacommons.org/licenses/odbl/1-0/&quot;&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; [1] &lt;modify&gt;\n  &lt;way id=&quot;32570900&quot; visible=&quot;true&quot; version=&quot;9&quot; changeset=&quot;1375 ...</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co"># Osmchange file compatible with JOSM and others:</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co"># xml2::write_xml(osmchange, file = tempfile(fileext = &quot;.osc&quot;))</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>chsts <span class="ot">&lt;-</span> <span class="fu">osm_query_changesets</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">bbox =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.241112</span>, <span class="fl">38.0294955</span>, <span class="fl">8.4203171</span>, <span class="fl">42.9186456</span>),</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">&quot;Mementomoristultus&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">time =</span> <span class="st">&quot;2023-06-22T02:23:23Z&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">time_2 =</span> <span class="st">&quot;2023-06-22T00:38:20Z&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>chsts</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;  [1] id             created_at     closed_at      open           user          </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;  [6] uid            min_lat        min_lon        max_lat        max_lon       </span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [11] comments_count changes_count  tags          </span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; &lt;0 files&gt; (o «row.names» de longitud 0)</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>osmchange <span class="ot">&lt;-</span> <span class="fu">osm_download_changeset</span>(<span class="at">changeset_id =</span> <span class="dv">137595351</span>, <span class="at">format =</span> <span class="st">&quot;xml&quot;</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>osmchange</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; {xml_document}</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; &lt;osmChange version=&quot;0.6&quot; generator=&quot;openstreetmap-cgimap 2.0.1 (1557706 spike-06.openstreetmap.org)&quot; copyright=&quot;OpenStreetMap and contributors&quot; attribution=&quot;http://www.openstreetmap.org/copyright&quot; license=&quot;http://opendatacommons.org/licenses/odbl/1-0/&quot;&gt;</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; [1] &lt;modify&gt;\n  &lt;way id=&quot;32570900&quot; visible=&quot;true&quot; version=&quot;9&quot; changeset=&quot;1375 ...</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># Osmchange file compatible with JOSM and others:</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co"># xml2::write_xml(osmchange, file = tempfile(fileext = &quot;.osc&quot;))</span></span></code></pre></div>
 <p>Similar to the map objects, changeset’s data also have the tags as a
 list column that can be changed with <code>tags_in_columns</code>
 argument.</p>
 </div>
 <div id="notes" class="section level2">
 <h2>Notes</h2>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>notes <span class="ot">&lt;-</span> <span class="fu">osm_read_bbox_notes</span>(<span class="at">bbox =</span> <span class="st">&quot;2.4166059,42.5945594,2.4176574,42.5962101&quot;</span>, <span class="at">closed =</span> <span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>notes</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt;         lon        lat      id</span></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; 1 2.4170566 42.5948042 1730475</span></span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; 2 2.4170552 42.5949259  628602</span></span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt;                                                       url comment_url close_url</span></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; 1 https://api.openstreetmap.org/api/0.6/notes/1730475.xml        &lt;NA&gt;      &lt;NA&gt;</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; 2  https://api.openstreetmap.org/api/0.6/notes/628602.xml        &lt;NA&gt;      &lt;NA&gt;</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt;          date_created status</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 1 2019-03-31 14:10:04 closed</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 2 2016-07-15 07:09:19 closed</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt;                                                          comments</span></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; 1                     2 comments from 2019-03-31 by Sherpa66, Syl</span></span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; 2 5 comments from 2016-07-15 to 2018-05-25 by Dolfo54, rainerU...</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># notes$comments</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>notes <span class="ot">&lt;-</span> <span class="fu">osm_read_bbox_notes</span>(<span class="at">bbox =</span> <span class="st">&quot;2.4166059,42.5945594,2.4176574,42.5962101&quot;</span>, <span class="at">closed =</span> <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>notes</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;         lon        lat      id</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; 1 2.4170566 42.5948042 1730475</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; 2 2.4170552 42.5949259  628602</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt;                                                       url comment_url close_url</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; 1 https://api.openstreetmap.org/api/0.6/notes/1730475.xml        &lt;NA&gt;      &lt;NA&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; 2  https://api.openstreetmap.org/api/0.6/notes/628602.xml        &lt;NA&gt;      &lt;NA&gt;</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt;          date_created status</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 1 2019-03-31 14:10:04 closed</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; 2 2016-07-15 07:09:19 closed</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;                                                          comments</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 1                     2 comments from 2019-03-31 by Sherpa66, Syl</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; 2 5 comments from 2016-07-15 to 2018-05-25 by Dolfo54, rainerU...</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co"># notes$comments</span></span></code></pre></div>
 </div>
 <div id="gpx-data" class="section level2">
 <h2>GPX data</h2>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">## Requires authentication</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>usr_traces <span class="ot">&lt;-</span>  <span class="fu">osm_list_gpxs</span>()</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">osm_get_gpx_metadata</span>(<span class="at">gpx_id =</span> <span class="dv">3790367</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt;        id                 name      uid     user visibility pending           timestamp</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; 1 3790367 Airoto_Marimanha.gpx 11725140 jmaspons     public   FALSE 2021-08-20 10:30:15 </span></span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt;                 lat                lon               description              tags</span></span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt; 1 42.69660229794681 1.0419843904674053 Airoto Marimanha Oriental 1 camp, a, través</span></span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>pts <span class="ot">&lt;-</span> <span class="fu">osm_get_data_gpx</span>(<span class="at">gpx_id =</span> <span class="dv">3790367</span>, <span class="at">format =</span> <span class="st">&quot;R&quot;</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="fu">head</span>(pts)</span>
-<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt;                  lat                lon               ele                time</span></span>
-<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; 1  42.69660229794681 1.0419843904674053 2190.199951171875 2021-08-12 09:52:18</span></span>
-<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt; 2  42.69662777893245   1.04197240434587              2189 2021-08-12 09:52:24</span></span>
-<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; 3  42.69664118997753  1.041965363547206  2188.39990234375 2021-08-12 09:52:25</span></span>
-<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; 4  42.69665057770908 1.0419651120901108 2187.800048828125 2021-08-12 09:52:26</span></span>
-<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; 5 42.696685614064336 1.0419511143118143 2186.800048828125 2021-08-12 09:52:29</span></span>
-<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; 6  42.69673557020724 1.0419355239719152              2187 2021-08-12 09:52:34</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>gpx <span class="ot">&lt;-</span> <span class="fu">osm_get_points_gps</span>(<span class="at">bbox =</span> <span class="fu">c</span>(<span class="fl">2.4166059</span>, <span class="fl">42.5945594</span>, <span class="fl">2.4176574</span>, <span class="fl">42.5962101</span>))</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>gpx</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;          lat       lon</span></span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; 1 42.5945734 2.4166662</span></span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; 2 42.5945770 2.4166060</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; 3 42.5945770 2.4166640</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; 4 42.5945770 2.4166880</span></span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; 5 42.5945890 2.4167120</span></span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; 6 42.5945999 2.4166340</span></span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; 7 42.5946030 2.4166390</span></span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; 8 42.5946100 2.4166260</span></span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; attr(,&quot;gpx_attributes&quot;)</span></span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt;                             version                             creator </span></span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt;                               &quot;1.0&quot;                 &quot;OpenStreetMap.org&quot; </span></span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt;                               xmlns </span></span>
-<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt; &quot;http://www.topografix.com/GPX/1/0&quot; </span></span>
-<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt; attr(,&quot;class&quot;)</span></span>
-<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;osmapi_gpx&quot; &quot;list&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## Requires authentication</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>usr_traces <span class="ot">&lt;-</span>  <span class="fu">osm_list_gpxs</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">osm_get_gpx_metadata</span>(<span class="at">gpx_id =</span> <span class="dv">3790367</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;        id                 name      uid     user visibility pending           timestamp</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; 1 3790367 Airoto_Marimanha.gpx 11725140 jmaspons     public   FALSE 2021-08-20 10:30:15 </span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt;                 lat                lon               description              tags</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; 1 42.69660229794681 1.0419843904674053 Airoto Marimanha Oriental 1 camp, a, través</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>pts <span class="ot">&lt;-</span> <span class="fu">osm_get_data_gpx</span>(<span class="at">gpx_id =</span> <span class="dv">3790367</span>, <span class="at">format =</span> <span class="st">&quot;R&quot;</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="fu">head</span>(pts)</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;                  lat                lon               ele                time</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; 1  42.69660229794681 1.0419843904674053 2190.199951171875 2021-08-12 09:52:18</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; 2  42.69662777893245   1.04197240434587              2189 2021-08-12 09:52:24</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; 3  42.69664118997753  1.041965363547206  2188.39990234375 2021-08-12 09:52:25</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; 4  42.69665057770908 1.0419651120901108 2187.800048828125 2021-08-12 09:52:26</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; 5 42.696685614064336 1.0419511143118143 2186.800048828125 2021-08-12 09:52:29</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; 6  42.69673557020724 1.0419355239719152              2187 2021-08-12 09:52:34</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>gpx <span class="ot">&lt;-</span> <span class="fu">osm_get_points_gps</span>(<span class="at">bbox =</span> <span class="fu">c</span>(<span class="fl">2.4166059</span>, <span class="fl">42.5945594</span>, <span class="fl">2.4176574</span>, <span class="fl">42.5962101</span>))</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>gpx</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt;          lat       lon</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; 1 42.5945734 2.4166662</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; 2 42.5945770 2.4166060</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; 3 42.5945770 2.4166640</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; 4 42.5945770 2.4166880</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; 5 42.5945890 2.4167120</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; 6 42.5945999 2.4166340</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; 7 42.5946030 2.4166390</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; 8 42.5946100 2.4166260</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; attr(,&quot;gpx_attributes&quot;)</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt;                             version                             creator </span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt;                               &quot;1.0&quot;                 &quot;OpenStreetMap.org&quot; </span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt;                               xmlns </span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; &quot;http://www.topografix.com/GPX/1/0&quot; </span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; attr(,&quot;class&quot;)</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;osmapi_gpx&quot; &quot;list&quot;</span></span></code></pre></div>
 </div>
 <div id="users" class="section level2">
 <h2>Users</h2>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>usrs <span class="ot">&lt;-</span> <span class="fu">osm_get_user_details</span>(<span class="at">user_id =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">24</span>, <span class="dv">44</span>, <span class="dv">45</span>))</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>usrs</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt;   id        display_name     account_created description  img contributor_terms</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt; 1  1               Steve 2005-09-13 15:32:57             &lt;NA&gt;              TRUE</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; 2 24 Petter Reinholdtsen 2005-09-12 16:54:12             &lt;NA&gt;              TRUE</span></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; 3 44             user_44 2005-03-20 19:55:17             &lt;NA&gt;             FALSE</span></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; 4 45             user_45 2005-03-20 20:09:58             &lt;NA&gt;             FALSE</span></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt;   roles changesets_count traces_count blocks_received.count</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; 1  &lt;NA&gt;             1151           23                     0</span></span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; 2  &lt;NA&gt;              543           64                     0</span></span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; 3  &lt;NA&gt;                0            0                     0</span></span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; 4  &lt;NA&gt;                0            0                     0</span></span>
-<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="co">#&gt;   blocks_received.active blocks_issued.count blocks_issued.active</span></span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co">#&gt; 1                      0                  NA                   NA</span></span>
-<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a><span class="co">#&gt; 2                      0                  NA                   NA</span></span>
-<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="co">#&gt; 3                      0                  NA                   NA</span></span>
-<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co">#&gt; 4                      0                  NA                   NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>usrs <span class="ot">&lt;-</span> <span class="fu">osm_get_user_details</span>(<span class="at">user_id =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">24</span>, <span class="dv">44</span>, <span class="dv">45</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>usrs</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt;   id        display_name     account_created description  img contributor_terms</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; 1  1               Steve 2005-09-13 15:32:57             &lt;NA&gt;              TRUE</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; 2 24 Petter Reinholdtsen 2005-09-12 16:54:12             &lt;NA&gt;              TRUE</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; 3 44             user_44 2005-03-20 19:55:17             &lt;NA&gt;             FALSE</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; 4 45             user_45 2005-03-20 20:09:58             &lt;NA&gt;             FALSE</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;   roles changesets_count traces_count blocks_received.count</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1  &lt;NA&gt;             1156           23                     0</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2  &lt;NA&gt;              543           64                     0</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 3  &lt;NA&gt;                0            0                     0</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 4  &lt;NA&gt;                0            0                     0</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt;   blocks_received.active blocks_issued.count blocks_issued.active</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; 1                      0                  NA                   NA</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; 2                      0                  NA                   NA</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; 3                      0                  NA                   NA</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; 4                      0                  NA                   NA</span></span></code></pre></div>
 </div>
 
 

@@ -1,3 +1,12 @@
+# osmapiR 0.2.2
+
+* Use the new function `httr2::oauth_cache_clear()` from httr2 1.0.6 (#58 by @hadley).
+* Update documentation and code for server-side changes documented in OSMWikiVersion
+  [2711808 -> 2775892](https://wiki.openstreetmap.org/w/index.php?title=API_v0.6&type=revision&diff=2775892&oldid=2711808)
+  (#60).
+  * Add new parameters to `osm_query_changesets(..., from, to)`.
+* Fix `osm_query_changesets(..., time, time_2)` (#61).
+
 # osmapiR 0.2.1
 
 * Update CITATION with the JOSS article (<https://doi.org/10.21105/joss.07151>).
