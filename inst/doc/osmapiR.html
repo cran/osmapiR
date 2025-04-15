@@ -355,7 +355,7 @@ details.</p>
 account and make calls to <a href="https://master.apis.dev.openstreetmap.org" class="uri">https://master.apis.dev.openstreetmap.org</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># set_osmapi_connection(server = &quot;testing&quot;) # lacks data for the following examples</span></span></code></pre></div>
 <p>To modify the default user agent of the requests
-(<code>osmapiR 0.2.2 (https://github.com/ropensci/osmapiR)</code>), set
+(<code>osmapiR 0.2.3 (https://github.com/ropensci/osmapiR)</code>), set
 the option <code>osmapir.user_agent</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">osmapir.user_agent =</span> <span class="st">&quot;my new user agent&quot;</span>)</span></code></pre></div>
 </div>
@@ -376,22 +376,31 @@ the option <code>osmapir.user_agent</code>:</p>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">tags_in_columns =</span> <span class="cn">FALSE</span> <span class="co"># tags in a list at column `tags`</span></span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>)</span>
 <span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>obj_history</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;   type       id visible version changeset           timestamp     user    uid</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; 1  way 50343004    TRUE       1   3882565 2010-02-15 12:14:11  Skywave  10927</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; 2  way 50343004    TRUE       2  13314595 2012-09-30 19:52:28 petrovsk  90394</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; 3  way 50343004    TRUE       3  53623614 2017-11-08 22:08:33    JFK73 662440</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; 4  way 50343004    TRUE       4 103004865 2021-04-15 15:41:02 petrovsk  90394</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;    lat  lon                                                         members</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; 1 &lt;NA&gt; &lt;NA&gt; 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; 2 &lt;NA&gt; &lt;NA&gt; 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; 3 &lt;NA&gt; &lt;NA&gt; 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; 4 &lt;NA&gt; &lt;NA&gt; 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;                                                                                  tags</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; 1 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; 2 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 3 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 4 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co"># obj_history$tags # tags in list format</span></span></code></pre></div>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;   type       id visible version changeset           timestamp       user</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; 1  way 50343004    TRUE       1   3882565 2010-02-15 12:14:11    Skywave</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; 2  way 50343004    TRUE       2  13314595 2012-09-30 19:52:28   petrovsk</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; 3  way 50343004    TRUE       3  53623614 2017-11-08 22:08:33      JFK73</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; 4  way 50343004    TRUE       4 103004865 2021-04-15 15:41:02   petrovsk</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; 5  way 50343004    TRUE       5 164200317 2025-03-28 10:16:25 X-Cyclette</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;        uid  lat  lon</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; 1    10927 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; 2    90394 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; 3   662440 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; 4    90394 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; 5 16689426 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;                                                           members</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 1 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 2 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; 3 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; 4 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; 5 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt;                                                                                  tags</span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; 1 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; 2 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; 3 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; 4 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; 5 16 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co"># obj_history$tags # tags in list format</span></span></code></pre></div>
 <p>Notice the different formats to represent the tags controlled by the
 <code>tags_in_columns</code> argument. In <code>osm_objs</code>, every
 tag is represented by a column in the data.frame (wide format), while in
@@ -415,7 +424,7 @@ list of data.frames with <code>key</code> and <code>value</code> columns
 <span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>osmchange <span class="ot">&lt;-</span> <span class="fu">osm_download_changeset</span>(<span class="at">changeset_id =</span> <span class="dv">137595351</span>, <span class="at">format =</span> <span class="st">&quot;xml&quot;</span>)</span>
 <span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>osmchange</span>
 <span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; {xml_document}</span></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; &lt;osmChange version=&quot;0.6&quot; generator=&quot;openstreetmap-cgimap 2.0.1 (1557706 spike-06.openstreetmap.org)&quot; copyright=&quot;OpenStreetMap and contributors&quot; attribution=&quot;http://www.openstreetmap.org/copyright&quot; license=&quot;http://opendatacommons.org/licenses/odbl/1-0/&quot;&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; &lt;osmChange version=&quot;0.6&quot; generator=&quot;openstreetmap-cgimap 2.0.1 (2270295 spike-07.openstreetmap.org)&quot; copyright=&quot;OpenStreetMap and contributors&quot; attribution=&quot;http://www.openstreetmap.org/copyright&quot; license=&quot;http://opendatacommons.org/licenses/odbl/1-0/&quot;&gt;</span></span>
 <span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; [1] &lt;modify&gt;\n  &lt;way id=&quot;32570900&quot; visible=&quot;true&quot; version=&quot;9&quot; changeset=&quot;1375 ...</span></span>
 <span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a></span>
 <span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># Osmchange file compatible with JOSM and others:</span></span>
@@ -491,7 +500,7 @@ argument.</p>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; 3 44             user_44 2005-03-20 19:55:17             &lt;NA&gt;             FALSE</span></span>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; 4 45             user_45 2005-03-20 20:09:58             &lt;NA&gt;             FALSE</span></span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;   roles changesets_count traces_count blocks_received.count</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1  &lt;NA&gt;             1156           23                     0</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1  &lt;NA&gt;             1162           23                     0</span></span>
 <span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2  &lt;NA&gt;              543           64                     0</span></span>
 <span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 3  &lt;NA&gt;                0            0                     0</span></span>
 <span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 4  &lt;NA&gt;                0            0                     0</span></span>
