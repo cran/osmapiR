@@ -170,7 +170,7 @@ osm_create_object <- function(x, changeset_id) {
 # XML representing the element, wrapped in an <code><osm></code> element:
 # <syntaxhighlight lang="xml">
 # <osm>
-#   <node id="123" lat="..." lon="..." version="142" changeset="12" user="fred" uid="123" visible="true" timestamp="2005-07-30T14:27:12+01:00">
+#   <node id="123" lat="..." lon="..." version="142" changeset="12" user="fred" uid="123" visible="true" timestamp="2005-07-30T14:27:12Z">
 #     <tag k="note" v="Just a node"/>
 #     ...
 #   </node>
@@ -302,6 +302,7 @@ osm_create_object <- function(x, changeset_id) {
 ### Notes ----
 # * This updates the bounding box of the changeset.
 # * To avoid performance issues when updating multiple objects, the use of the [[API v0.6#Diff upload: POST /api/0.6/changeset/#id/upload|Diff upload]] endpoint is highly recommended. This is also the only way to ensure that multiple objects are updated in a single database transaction.
+# ** If you can't use the Diff upload and plan to update more items, mind to do it sequentially (not in parallel)
 
 #' Update an OSM object
 #'
@@ -328,6 +329,8 @@ osm_create_object <- function(x, changeset_id) {
 #' * To avoid performance issues when updating multiple objects, the use of the [osm_diff_upload_changeset()] is highly
 #'   recommended. This is also the only way to ensure that multiple objects are updated in a single database
 #'   transaction.
+#'   * If you can't use the [osm_diff_upload_changeset()] and plan to update more items, mind to do it sequentially (not
+#'     in parallel).
 #'
 #' @return Returns the new version number of the object.
 #' @family edit OSM objects' functions
@@ -679,13 +682,13 @@ osm_history_object <- function(osm_type = c("node", "way", "relation"), osm_id,
 ### Parameters ----
 # ; [nodes|ways|relations]=comma separated list
 # : The parameter has to be the same in the URL (e.g. /api/0.6/nodes?nodes=123,456,789)
-# : Version numbers for each object may be optionally provided following a lowercase "v" character, e.g. /api/0.6/nodes?nodes=421586779v1,421586779v2  (Currently supported only in CGImap, used on osm.org https://github.com/openstreetmap/openstreetmap-website/pull/1189/)
+# : Version numbers for each object may be optionally provided following a lowercase "v" character, e.g. /api/0.6/nodes?nodes=421586779v1,421586779v2 (Currently supported only in CGImap, used on osm.org https://github.com/openstreetmap/openstreetmap-website/pull/1189/)
 #
 ### Error codes ----
 # ; HTTP status code 400 (Bad Request)
 # : On a malformed request (parameters missing or wrong)
 # ; HTTP status code 404 (Not Found)
-# : If one of the elements could not be found (By "not found" is meant never existed in the database  or its requested version was redacted, if the object was deleted, it will be returned with the attribute visible="false")
+# : If one of the elements could not be found (By "not found" is meant never existed in the database or its requested version was redacted, if the object was deleted, it will be returned with the attribute visible="false")
 # ; HTTP status code 414 (Request-URI Too Large)
 # : If the URI was too long (tested to be > 8213 characters in the URI, or > 725 elements for 10 digit IDs when not specifying versions)
 #

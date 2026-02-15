@@ -2,7 +2,10 @@
 #'
 #' This is an API method for querying changesets. It supports querying by different criteria.
 #'
-#' @param bbox Find changesets within the given bounding box coordinates (`left,bottom,right,top`).
+#' @param bbox Find changesets within the given bounding box coordinates (`left,bottom,right,top`). It can be specified
+#'   by a character, matrix, vector, `bbox` object from \pkg{sf}, a `SpatExtent` from \pkg{terra}. Unnamed vectors and
+#'   matrices will be sorted appropriately and must merely be in the order (`x`, `y`, `x`, `y`) or `x` in the first
+#'   column and `y` in the second column.
 #' @param user Find changesets by the user with the given user id (numeric) or display name (character).
 #' @param time Find changesets **closed** after this date and time. See details for the valid formats.
 #' @param time_2 find changesets that were **closed** after `time` and **created** before `time_2`. In other words, any
@@ -103,19 +106,20 @@
 #' chst_ids
 #'
 #' chsts <- osm_query_changesets(
-#'   bbox = c(-1.241112, 38.0294955, 8.4203171, 42.9186456),
-#'   user = "Mementomoristultus",
-#'   time = "2023-06-22T02:23:23Z",
-#'   time_2 = "2023-06-22T00:38:20Z"
+#'   bbox = c(2.65, 42.68, 2.71, 42.69),
+#'   user = 19641470,
+#'   time = "2023-06-20",
+#'   time_2 = "2023-06-22",
+#'   tags_in_columns = TRUE
 #' )
 #' chsts
 #'
 #' chsts2 <- osm_query_changesets(
 #'   bbox = c("-9.3015367,41.8073642,-6.7339533,43.790422"),
 #'   user = "Mementomoristultus",
-#'   closed = TRUE
+#'   closed = "true"
 #' )
-#' chsts2
+#' head(chsts2)
 osm_query_changesets <- function(bbox, user, time, time_2, from, to, open, closed, changeset_ids,
                                  order = c("newest", "oldest"),
                                  limit = getOption("osmapir.api_capabilities")$api$changesets["default_query_limit"],
@@ -131,7 +135,7 @@ osm_query_changesets <- function(bbox, user, time, time_2, from, to, open, close
   if (missing(bbox)) {
     bbox <- NULL
   } else {
-    bbox <- paste(bbox, collapse = ",")
+    bbox <- bbox_to_string(bbox)
   }
 
   if (missing(user)) {

@@ -48,8 +48,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +61,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -355,7 +356,7 @@ details.</p>
 account and make calls to <a href="https://master.apis.dev.openstreetmap.org" class="uri">https://master.apis.dev.openstreetmap.org</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># set_osmapi_connection(server = &quot;testing&quot;) # lacks data for the following examples</span></span></code></pre></div>
 <p>To modify the default user agent of the requests
-(<code>osmapiR 0.2.4 (https://github.com/ropensci/osmapiR)</code>), set
+(<code>osmapiR 0.2.5 (https://github.com/ropensci/osmapiR)</code>), set
 the option <code>osmapir.user_agent</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">osmapir.user_agent =</span> <span class="st">&quot;my new user agent&quot;</span>)</span></code></pre></div>
 </div>
@@ -363,72 +364,133 @@ the option <code>osmapir.user_agent</code>:</p>
 <h2>Map objects</h2>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="do">## Download objects by bounding box</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>osm_objs <span class="ot">&lt;-</span> <span class="fu">osm_bbox_objects</span>(</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">bbox =</span> <span class="fu">c</span>(<span class="fl">2.4166059</span>, <span class="fl">42.5945594</span>, <span class="fl">2.4176574</span>, <span class="fl">42.5962101</span>),</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">tags_in_columns =</span> <span class="cn">TRUE</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>)</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="do">## View the history of an object</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>sel <span class="ot">&lt;-</span> osm_objs<span class="sc">$</span><span class="st">`</span><span class="at">name:ca</span><span class="st">`</span> <span class="sc">%in%</span> <span class="st">&quot;Abadia de Sant Miquel de Cuixà&quot;</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>obj <span class="ot">&lt;-</span> osm_objs[sel, ]</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>obj_history <span class="ot">&lt;-</span> <span class="fu">osm_history_object</span>(</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="at">osm_type =</span> obj<span class="sc">$</span>osm_type, <span class="at">osm_id =</span> obj<span class="sc">$</span>osm_id,</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">tags_in_columns =</span> <span class="cn">FALSE</span> <span class="co"># tags in a list at column `tags`</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>)</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>obj_history</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;   type       id visible version changeset           timestamp       user</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; 1  way 50343004    TRUE       1   3882565 2010-02-15 12:14:11    Skywave</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; 2  way 50343004    TRUE       2  13314595 2012-09-30 19:52:28   petrovsk</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; 3  way 50343004    TRUE       3  53623614 2017-11-08 22:08:33      JFK73</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; 4  way 50343004    TRUE       4 103004865 2021-04-15 15:41:02   petrovsk</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; 5  way 50343004    TRUE       5 164200317 2025-03-28 10:16:25 X-Cyclette</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;        uid  lat  lon</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; 1    10927 &lt;NA&gt; &lt;NA&gt;</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; 2    90394 &lt;NA&gt; &lt;NA&gt;</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; 3   662440 &lt;NA&gt; &lt;NA&gt;</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; 4    90394 &lt;NA&gt; &lt;NA&gt;</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; 5 16689426 &lt;NA&gt; &lt;NA&gt;</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;                                                           members</span></span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 1 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; 2 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; 3 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; 4 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; 5 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt;                                                                                  tags</span></span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; 1 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
-<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; 2 8 tags: amenity=place_of_worship | building=yes | denomination=catholic | histor...</span></span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; 3 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; 4 15 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; 5 16 tags: amenity=place_of_worship | building=yes | denomination=catholic | herit...</span></span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co"># obj_history$tags # tags in list format</span></span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">bbox =</span> <span class="fu">c</span>(<span class="fl">2.4166059</span>, <span class="fl">42.5945594</span>, <span class="fl">2.4176574</span>, <span class="fl">42.5962101</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">head</span>(osm_objs)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;   type        id visible version changeset           timestamp     user   uid</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; 1 node 521349679    TRUE       3  14832699 2013-01-29 10:08:52 petrovsk 90394</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; 2 node 521349680    TRUE       3  14832699 2013-01-29 10:08:52 petrovsk 90394</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; 3 node 521349681    TRUE       3  14832699 2013-01-29 10:08:52 petrovsk 90394</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; 4 node 639618608    TRUE       2 103004865 2021-04-15 15:41:02 petrovsk 90394</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; 5 node 639618609    TRUE       2 103004865 2021-04-15 15:41:02 petrovsk 90394</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; 6 node 639618610    TRUE       2 103004865 2021-04-15 15:41:02 petrovsk 90394</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;          lat       lon members    tags</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; 1 42.5961954 2.4186301    NULL No tags</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; 2 42.5966411 2.4184297    NULL No tags</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; 3 42.5973670 2.4177800    NULL No tags</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; 4 42.5945781 2.4167126    NULL No tags</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; 5 42.5948055 2.4166170    NULL No tags</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; 6 42.5948686 2.4168323    NULL No tags</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co"># osm_objs$tags # tags in list format</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="do">## View the history of an object</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>sel <span class="ot">&lt;-</span> <span class="fu">sapply</span>(osm_objs<span class="sc">$</span>tags, <span class="cf">function</span>(x) <span class="fu">any</span>(x<span class="sc">$</span>key <span class="sc">==</span> <span class="st">&quot;name:ca&quot;</span> <span class="sc">&amp;</span> x<span class="sc">$</span>value <span class="sc">==</span> <span class="st">&quot;Abadia de Sant Miquel de Cuixà&quot;</span>))</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>obj <span class="ot">&lt;-</span> osm_objs[sel, ]</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>obj_history <span class="ot">&lt;-</span> <span class="fu">osm_history_object</span>(</span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>  <span class="at">osm_type =</span> obj<span class="sc">$</span>type[<span class="dv">1</span>], <span class="at">osm_id =</span> obj<span class="sc">$</span>id[<span class="dv">1</span>],</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>  <span class="at">tags_in_columns =</span> <span class="cn">TRUE</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>)</span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>obj_history</span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt;   osm_type   osm_id visible version changeset           timestamp       user</span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; 1      way 50343004    TRUE       1   3882565 2010-02-15 12:14:11    Skywave</span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; 2      way 50343004    TRUE       2  13314595 2012-09-30 19:52:28   petrovsk</span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; 3      way 50343004    TRUE       3  53623614 2017-11-08 22:08:33      JFK73</span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; 4      way 50343004    TRUE       4 103004865 2021-04-15 15:41:02   petrovsk</span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; 5      way 50343004    TRUE       5 164200317 2025-03-28 10:16:25 X-Cyclette</span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt;        uid  lat  lon</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; 1    10927 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; 2    90394 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; 3   662440 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; 4    90394 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; 5 16689426 &lt;NA&gt; &lt;NA&gt;</span></span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt;                                                           members</span></span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; 1 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; 2 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; 3 44 nodes: 639618609, 639618608, 639618720, 639618717, 639618...</span></span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; 4 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; 5 48 nodes: 639618609, 639618608, 8632687795, 8632687796, 8632...</span></span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt;            amenity building denomination heritage heritage:operator  historic</span></span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; 1 place_of_worship      yes     catholic     &lt;NA&gt;              &lt;NA&gt; monastery</span></span>
+<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; 2 place_of_worship      yes     catholic     &lt;NA&gt;              &lt;NA&gt; monastery</span></span>
+<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; 3 place_of_worship      yes     catholic        2               mhs monastery</span></span>
+<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; 4 place_of_worship      yes     catholic        2               mhs monastery</span></span>
+<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; 5 place_of_worship      yes     catholic        2               mhs monastery</span></span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt;   mhs:inscription_date                           name</span></span>
+<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; 1                 &lt;NA&gt; Abbaye de Saint Michel de Cuxa</span></span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; 2                 &lt;NA&gt; Abbaye de Saint-Michel de Cuxa</span></span>
+<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; 3           1958-04-15 Abbaye de Saint-Michel de Cuxa</span></span>
+<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt; 4           1958-04-15 Abbaye de Saint-Michel de Cuxa</span></span>
+<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt; 5           1958-04-15 Abbaye de Saint-Michel de Cuxa</span></span>
+<span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a><span class="co">#&gt;                          name:ca</span></span>
+<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt; 1 Abadia de Sant Miquel de Cuixa</span></span>
+<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt; 2 Abadia de Sant Miquel de Cuixa</span></span>
+<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt; 3 Abadia de Sant Miquel de Cuixà</span></span>
+<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt; 4 Abadia de Sant Miquel de Cuixà</span></span>
+<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt; 5 Abadia de Sant Miquel de Cuixà</span></span>
+<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt;                                                                    note</span></span>
+<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt; 1                                                                  &lt;NA&gt;</span></span>
+<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt; 2                                                                  &lt;NA&gt;</span></span>
+<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt; 3                                                                  &lt;NA&gt;</span></span>
+<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt; 4                                                                  &lt;NA&gt;</span></span>
+<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">#&gt; 5 Photogrammétrie:\nhttps://xcyclette.site/Abbaye-Saint-Michel-de-Cuxa/</span></span>
+<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="co">#&gt;      ref:mhs  religion</span></span>
+<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="co">#&gt; 1       &lt;NA&gt; christian</span></span>
+<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a><span class="co">#&gt; 2       &lt;NA&gt; christian</span></span>
+<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a><span class="co">#&gt; 3 PA00103995 christian</span></span>
+<span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a><span class="co">#&gt; 4 PA00103995 christian</span></span>
+<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="co">#&gt; 5 PA00103995 christian</span></span>
+<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a><span class="co">#&gt;                                                                                   source</span></span>
+<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a><span class="co">#&gt; 1 cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre ; mise à jour : 2010</span></span>
+<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a><span class="co">#&gt; 2 cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre ; mise à jour : 2010</span></span>
+<span id="cb4-83"><a href="#cb4-83" tabindex="-1"></a><span class="co">#&gt; 3 cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre ; mise à jour : 2010</span></span>
+<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a><span class="co">#&gt; 4 cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre ; mise à jour : 2010</span></span>
+<span id="cb4-85"><a href="#cb4-85" tabindex="-1"></a><span class="co">#&gt; 5   cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre;mise à jour : 2010</span></span>
+<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a><span class="co">#&gt;                                  source:heritage wikidata</span></span>
+<span id="cb4-87"><a href="#cb4-87" tabindex="-1"></a><span class="co">#&gt; 1                                           &lt;NA&gt;     &lt;NA&gt;</span></span>
+<span id="cb4-88"><a href="#cb4-88" tabindex="-1"></a><span class="co">#&gt; 2                                           &lt;NA&gt;     &lt;NA&gt;</span></span>
+<span id="cb4-89"><a href="#cb4-89" tabindex="-1"></a><span class="co">#&gt; 3 data.gouv.fr:Ministère de la Culture - 04/2015  Q306121</span></span>
+<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a><span class="co">#&gt; 4 data.gouv.fr:Ministère de la Culture - 04/2015  Q306121</span></span>
+<span id="cb4-91"><a href="#cb4-91" tabindex="-1"></a><span class="co">#&gt; 5 data.gouv.fr:Ministère de la Culture - 04/2015  Q306121</span></span>
+<span id="cb4-92"><a href="#cb4-92" tabindex="-1"></a><span class="co">#&gt;                        wikipedia</span></span>
+<span id="cb4-93"><a href="#cb4-93" tabindex="-1"></a><span class="co">#&gt; 1                           &lt;NA&gt;</span></span>
+<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a><span class="co">#&gt; 2                           &lt;NA&gt;</span></span>
+<span id="cb4-95"><a href="#cb4-95" tabindex="-1"></a><span class="co">#&gt; 3 fr:Abbaye Saint-Michel de Cuxa</span></span>
+<span id="cb4-96"><a href="#cb4-96" tabindex="-1"></a><span class="co">#&gt; 4 fr:Abbaye Saint-Michel de Cuxa</span></span>
+<span id="cb4-97"><a href="#cb4-97" tabindex="-1"></a><span class="co">#&gt; 5 fr:Abbaye Saint-Michel de Cuxa</span></span></code></pre></div>
 <p>Notice the different formats to represent the tags controlled by the
-<code>tags_in_columns</code> argument. In <code>osm_objs</code>, every
-tag is represented by a column in the data.frame (wide format), while in
-<code>obj_history</code> there is a <code>tag</code> column containing a
-list of data.frames with <code>key</code> and <code>value</code> columns
-(list format). See <code>?tags_list2wide()</code> for details.</p>
+<code>tags_in_columns</code> argument. In <code>osm_objs</code> there is
+a <code>tag</code> column containing a list of data.frames with
+<code>key</code> and <code>value</code> columns (list format), while in
+<code>obj_history</code> every tag is represented by a column in the
+data.frame (wide format). See <code>?tags_list2wide()</code> for
+details.</p>
 </div>
 <div id="changesets" class="section level2">
 <h2>Changesets</h2>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>chsts <span class="ot">&lt;-</span> <span class="fu">osm_query_changesets</span>(</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">bbox =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.241112</span>, <span class="fl">38.0294955</span>, <span class="fl">8.4203171</span>, <span class="fl">42.9186456</span>),</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">&quot;Mementomoristultus&quot;</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">time =</span> <span class="st">&quot;2023-06-22T02:23:23Z&quot;</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">time_2 =</span> <span class="st">&quot;2023-06-22T00:38:20Z&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">bbox =</span> <span class="fu">c</span>(<span class="fl">2.65</span>, <span class="fl">42.68</span>, <span class="fl">2.71</span>, <span class="fl">42.69</span>),</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">&quot;Quercinus&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">time =</span> <span class="st">&quot;2023-06-20&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">time_2 =</span> <span class="st">&quot;2023-06-22&quot;</span></span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>)</span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>chsts</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;  [1] id             created_at     closed_at      open           user          </span></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;  [6] uid            min_lat        min_lon        max_lat        max_lon       </span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [11] comments_count changes_count  tags          </span></span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; &lt;0 files&gt; (o «row.names» de longitud 0)</span></span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>osmchange <span class="ot">&lt;-</span> <span class="fu">osm_download_changeset</span>(<span class="at">changeset_id =</span> <span class="dv">137595351</span>, <span class="at">format =</span> <span class="st">&quot;xml&quot;</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>osmchange</span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; {xml_document}</span></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; &lt;osmChange version=&quot;0.6&quot; generator=&quot;openstreetmap-cgimap 2.1.0 (1767381 spike-08.openstreetmap.org)&quot; copyright=&quot;OpenStreetMap and contributors&quot; attribution=&quot;http://www.openstreetmap.org/copyright&quot; license=&quot;http://opendatacommons.org/licenses/odbl/1-0/&quot;&gt;</span></span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; [1] &lt;modify&gt;\n  &lt;way id=&quot;32570900&quot; visible=&quot;true&quot; version=&quot;9&quot; changeset=&quot;1375 ...</span></span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># Osmchange file compatible with JOSM and others:</span></span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co"># xml2::write_xml(osmchange, file = tempfile(fileext = &quot;.osc&quot;))</span></span></code></pre></div>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;          id          created_at           closed_at  open      user      uid</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; 1 137595351 2023-06-21 09:09:18 2023-06-21 09:09:18 FALSE Quercinus 19641470</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;      min_lat   min_lon    max_lat   max_lon comments_count changes_count</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; 1 42.6799619 2.6580564 42.6936802 2.7125775              4             1</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;                                                                                  tags</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; 1 8 tags: changesets_count=1 | comment=Correcció d&#39;acord amb la toponímia oficial ...</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>osmchange <span class="ot">&lt;-</span> <span class="fu">osm_download_changeset</span>(<span class="at">changeset_id =</span> <span class="dv">137595351</span>, <span class="at">format =</span> <span class="st">&quot;xml&quot;</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>osmchange</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt; {xml_document}</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; &lt;osmChange version=&quot;0.6&quot; generator=&quot;openstreetmap-cgimap 2.1.0 (3720767 spike-07.openstreetmap.org)&quot; copyright=&quot;OpenStreetMap and contributors&quot; attribution=&quot;http://www.openstreetmap.org/copyright&quot; license=&quot;http://opendatacommons.org/licenses/odbl/1-0/&quot;&gt;</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; [1] &lt;modify&gt;\n  &lt;way id=&quot;32570900&quot; visible=&quot;true&quot; version=&quot;9&quot; changeset=&quot;1375 ...</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co"># Osmchange file compatible with JOSM and others:</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co"># xml2::write_xml(osmchange, file = tempfile(fileext = &quot;.osc&quot;))</span></span></code></pre></div>
 <p>Similar to the map objects, changeset’s data also have the tags as a
 list column that can be changed with <code>tags_in_columns</code>
 argument.</p>
@@ -449,7 +511,8 @@ argument.</p>
 <span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;                                                          comments</span></span>
 <span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 1                     2 comments from 2019-03-31 by Sherpa66, Syl</span></span>
 <span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; 2 5 comments from 2016-07-15 to 2018-05-25 by Dolfo54, rainerU...</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co"># notes$comments</span></span></code></pre></div>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co"># notes$comments</span></span></code></pre></div>
 </div>
 <div id="gpx-data" class="section level2">
 <h2>GPX data</h2>
@@ -500,8 +563,8 @@ argument.</p>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; 3 44             user_44 2005-03-20 19:55:17             &lt;NA&gt;             FALSE</span></span>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; 4 45             user_45 2005-03-20 20:09:58             &lt;NA&gt;             FALSE</span></span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;   roles changesets_count traces_count blocks_received.count</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1  &lt;NA&gt;             1164           23                     0</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2  &lt;NA&gt;              543           64                     0</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 1  &lt;NA&gt;             1176           23                     0</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2  &lt;NA&gt;              564           64                     0</span></span>
 <span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 3  &lt;NA&gt;                0            0                     0</span></span>
 <span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 4  &lt;NA&gt;                0            0                     0</span></span>
 <span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt;   blocks_received.active blocks_issued.count blocks_issued.active</span></span>

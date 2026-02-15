@@ -1,7 +1,7 @@
 Type: Package
 Package: osmapiR
 Title: 'OpenStreetMap' API
-Version: 0.2.4
+Version: 0.2.5
 Authors@R: c(
     person("Joan", "Maspons", , "joanmaspons@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0003-2286-8727")),
@@ -26,7 +26,7 @@ RoxygenNote: 7.3.2
 X-schema.org-keywords: open street map, openstreetmap, OSM,
         openstreetmap-api, osmapi, API
 NeedsCompilation: no
-Packaged: 2025-08-18 09:50:09 UTC; joan
+Packaged: 2026-02-15 21:35:28 UTC; joan
 Author: Joan Maspons [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0003-2286-8727>),
   Jon Harmon [rev] (Jon reviewed the package for rOpenSci, see
@@ -37,4 +37,4 @@ Author: Joan Maspons [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0002-9378-0549>)
 Maintainer: Joan Maspons <joanmaspons@gmail.com>
 Repository: CRAN
-Date/Publication: 2025-08-18 10:20:07 UTC
+Date/Publication: 2026-02-15 21:50:02 UTC

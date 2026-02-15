@@ -45,7 +45,7 @@
 # If there are multiple `changeset` elements in the XML the tags from all of them are used, later ones overriding the earlier ones in case of duplicate keys.
 #
 ### Response ----
-# The ID of the newly created changeset with a content type of `text/plain`
+# The ID of the newly created changeset with a content type of `text/plain`.
 #
 ### Error codes ----
 # ; HTTP status code 400 (Bad Request)
@@ -143,7 +143,7 @@ osm_create_changeset <- function(comment, ...,
 # : Indicates whether the result should contain the changeset discussion or not. If this parameter is set to anything, the discussion is returned. If it is empty or omitted, the discussion will not be in the result.
 #
 ### Response XML ----
-# Returns the single changeset element containing the changeset tags with a content type of `text/xml`
+# Returns the single changeset element containing the changeset tags with a content type of `application/xml`
 #  GET /api/0.6/changeset/#id?include_discussion=true
 # <syntaxhighlight lang="xml">
 #
@@ -350,7 +350,7 @@ osm_create_changeset <- function(comment, ...,
 # : The id of the changeset to update. The user issuing this API call has to be the same that created the changeset
 #
 ### Response ----
-# An OSM document containing the new version of the changeset with a content type of `text/xml`
+# An OSM document containing the new version of the changeset with a content type of `application/xml`
 #
 ### Error codes ----
 # ; HTTP status code 400 (Bad Request)
@@ -448,7 +448,7 @@ osm_close_changeset <- function(changeset_id) {
 # : The id of the changeset for which the OsmChange is requested.
 #
 ### Response ----
-# The OsmChange XML with a content type of `text/xml`.
+# The OsmChange XML with a content type of `application/xml`.
 #
 ### Error codes ----
 # ; HTTP status code 404 (Not Found)
@@ -538,7 +538,7 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 # Anything that [https://ruby-doc.org/stdlib-2.7.0/libdoc/time/rdoc/Time.html#method-c-parse <code>Time.parse</code> Ruby function] will parse.
 #
 ### Response ----
-# Returns a list of all changeset ordered by creation date. The `<osm>` element may be empty if there were no results for the query. The response is sent with a content type of `text/xml`.
+# Returns a list of all changeset ordered by creation date. The `<osm>` element may be empty if there were no results for the query. The response is sent with a content type of `application/xml`.
 #
 ### Error codes ----
 # ; HTTP status code 400 (Bad Request) - `text/plain`
@@ -554,7 +554,10 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 #'
 #' This is an API method for getting a list of changesets. It supports filtering by different criteria.
 #'
-#' @param bbox Find changesets within the given bounding box coordinates (`left,bottom,right,top`).
+#' @param bbox Find changesets within the given bounding box coordinates (`left,bottom,right,top`). It can be specified
+#'   by a character, matrix, vector, `bbox` object from \pkg{sf}, a `SpatExtent` from \pkg{terra}. Unnamed vectors and
+#'   matrices will be sorted appropriately and must merely be in the order (`x`, `y`, `x`, `y`) or `x` in the first
+#'   column and `y` in the second column.
 #' @param user Find changesets by the user with the given user id (numeric) or display name (character).
 #' @param time Find changesets **closed** after this date and time. Compare with `from=T1` which filters by creation
 #'   time instead. See details for the valid formats.
@@ -590,7 +593,7 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 #' – see the [current state](https://github.com/openstreetmap/openstreetmap-website/blob/master/app/controllers/api/changesets_controller.rb#L174)).
 #' Reverse ordering cannot be combined with `time`.
 #'
-#' Te valid formats for `time`, `time_2`, `from` and `to` parameters are [POSIXt] values or characters with anything
+#' The valid formats for `time`, `time_2`, `from` and `to` parameters are [POSIXt] values or characters with anything
 #' that [`Time.parse` Ruby function](https://ruby-doc.org/stdlib-2.7.0/libdoc/time/rdoc/Time.html#method-c-parse) will
 #' parse.
 #'
@@ -645,7 +648,7 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 #' }
 #' ```
 #'
-#' @family get changesets' functions
+# @family get changesets' functions
 #' @noRd
 #'
 #' @examples
@@ -653,10 +656,11 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 #' chst_ids
 #'
 #' chsts <- osm_query_changesets(
-#'   bbox = c(-1.241112, 38.0294955, 8.4203171, 42.9186456),
-#'   user = "Mementomoristultus",
-#'   time = "2023-06-22T02:23:23Z",
-#'   time_2 = "2023-06-22T00:38:20Z"
+#'   bbox = c(2.65, 42.68, 2.71, 42.69),
+#'   user = 19641470,
+#'   time = "2023-06-20",
+#'   time_2 = "2023-06-22",
+#'   tags_in_columns = TRUE
 #' )
 #' chsts
 #'
@@ -665,7 +669,7 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 #'   user = "Mementomoristultus",
 #'   closed = "true"
 #' )
-#' chsts2
+#' head(chsts2)
 .osm_query_changesets <- function(bbox = NULL, user = NULL, time = NULL, time_2 = NULL, from = NULL, to = NULL,
                                   open = NULL, closed = NULL, changeset_ids = NULL, order = NULL,
                                   limit = getOption(
@@ -713,7 +717,7 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
   req <- httr2::req_method(req, "GET")
   req <- httr2::req_url_path_append(req, ext)
   req <- httr2::req_url_query(req,
-    bbox = bbox,
+    bbox = bbox_to_string(bbox),
     user = user, display_name = display_name,
     time = time, from = from, to = to,
     open = open, closed = closed,
@@ -755,7 +759,7 @@ osm_download_changeset <- function(changeset_id, format = c("R", "osc", "xml")) 
 # : The OsmChange file data
 #
 ### Response ----
-# If a diff is successfully applied a XML (content type `text/xml`) is returned in the following format
+# If a diff is successfully applied a XML (content type `application/xml`) is returned in the following format
 # <syntaxhighlight lang="xml">
 # <diffResult generator="OpenStreetMap Server" version="0.6">
 #   <node|way|relation old_id="#" new_id="#" new_version="#"/>
